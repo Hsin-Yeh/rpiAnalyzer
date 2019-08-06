@@ -1,0 +1,61 @@
+This branch is for analyzing rpi test data 
+* Setup 
+   #+BEGIN_SRC sh
+   git clone https://github.com/Hsin-Yeh/RPI_analysis.git 
+   cd RPI_analysis/Analysis
+   git pull
+   git checkout injection_analysis_CMSSW 
+   make 
+   #+END_SRC
+   
+* How to Use
+*** General plots
+This is an example if one wants to do some general checks and output some plots. The output plots will store in a root file in the "root_plot" directory 
+
+   #+BEGIN_SRC sh
+   inputFile="moduleExample/ana_output/ModuleExample_27-6-2019_19-50_pedestal.root"
+   outputFile="plot_ModuleExample_27-6-2019_19-50_pedestal.root"
+   ls ${inputFile} > data_input.txt
+   ./makePlots
+   root root_plot/${outputFile} -l
+   #+END_SRC
+     
+*** High gain pulse display
+If one wants to display the data pulse shape 
+
+   #+BEGIN_SRC sh
+   ls moduleExample/ana_output/ModuleExample_27-6-2019_20-13_pedestal.root > data_input.txt
+   ./makePlots -p 38
+   #+END_SRC
+   
+*** Usage help 
+One could check the usage and arguments settings by typing : 
+
+   #+BEGIN_SRC sh
+   ./makePlots -h 
+   #+END_SRC
+   
+*** Data Directories
+One should create a new tree directories to contain the raw, yaml, and decoded root file for a new moduleName 
+
+   #+BEGIN_SRC sh
+   mkdir -p module${Name}/raw module${Name}/yaml module${Name}/ana_output module${Name}/pedFile
+   #+END_SRC
+
+*** Example data 
+I have created a directory "moduleExample" containing two runs of rpi data. One is pedestal run and the other is charge injection run in channel 38. You could check the yaml files for more information.
+
+*** Input root file leaf definition 
+You can find the definitions in include/makePlots.h
+
+* Study topics 
+1. pedestal & noise 
+2. injection 
+3. LED 
+4. Cosmic 
+5. More..
+
+* Ideas and TODOs
+**** Add decoder for raw file decoding
+**** set up a standard main function, people could add plugins later on 
+**** implement Chia-Hung's gain factor code 
