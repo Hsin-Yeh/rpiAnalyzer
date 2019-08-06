@@ -432,8 +432,8 @@ void makePlots::PlotProducer(){
 			sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, ichip);
 			multig_XTalkCoupling_ring->SetTitle(title);
 			multig_XTalkCoupling_ring->SetName(title);
-			//multig_XTalkCoupling_ring->Draw("AP");
-			//c->Update();
+			multig_XTalkCoupling_ring->Draw("AP");
+			c->Update();
 			multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.5);
 			multig_XTalkCoupling_ring->Write();
 		}
