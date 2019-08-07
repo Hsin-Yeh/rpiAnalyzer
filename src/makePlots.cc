@@ -497,7 +497,7 @@ void makePlots::PlotProducer(){
 	InitTH2Poly(*poly);
 	poly->SetMinimum(-0.1);
 	for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-		int ichip = ichannel / NCH;
+ 		int ichip = ichannel / NCH;
 		float X, Y;
 		int forCH = ichannel / 2;
 		bool NoisyBool = false;
@@ -911,7 +911,7 @@ void makePlots::yamlReader(){
 			if ( yamlFile.eof() ) break;
 			getline (yamlFile, line);
 	  
-			if ( oneChannelInjection_flag == false && line.find("channelIds:") != -1 ){
+			if ( line.find("channelIds:") != -1 ){
 				string tmp;
 				yamlFile >> tmp >> searchstr;
 				start = line.find("[");
@@ -924,27 +924,23 @@ void makePlots::yamlReader(){
 				//injCh = atoi(searchstr.c_str());
 				cout << "InjCh = " << injCh << endl;
 			}
-			if ( line.find("acquisitionType") != -1 ){
+			else if ( line.find("acquisitionType") != -1 ){
 				start = line.find(":");
 				searchstr = line.erase(0, start+2);
 				acquisitionType = searchstr;
 				cout << "acquisitionType = " << acquisitionType << endl;
 			}
-			else if ( oneChannelInjection_flag == true && line.find("channelIds:") != -1 ) {
-				getline(yamlFile, line);
-				int count = 3; 
-				while ( line.find("[]") != -1) {
-					getline(yamlFile, line);
-					count--;
-					if ( count < 0 ) break;
+			else if ( line.find("chipId:") != -1 ) {
+				start = line.find(":");
+				searchstr = line.substr(start+1,end-start+1);
+				injChip = atoi(searchstr.c_str());
+				if ( injChip = -1 ) { 
+					cout << "InjChip = " << InjChip << endl;
+					oneChannelInjection_flag == false;
 				}
-				if ( count > -1 ) {
-					injChip = count;
-					start = line.find_last_of("-");
-					searchstr = line.erase(0,start+2);
-					injCh = atoi(searchstr.c_str());
-					cout << "InjCh = " << injCh << endl;
-					cout << "1 channel injection = " << injChip << endl;
+				else {
+					cout << "InjChip = " << InjChip << endl;
+					oneChannelInjection_flag == true;
 				}
 			}
 		}
