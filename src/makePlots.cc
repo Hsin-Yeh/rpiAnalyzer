@@ -934,13 +934,13 @@ void makePlots::yamlReader(){
 				start = line.find(":");
 				searchstr = line.substr(start+1,end-start+1);
 				injChip = atoi(searchstr.c_str());
-				if ( injChip = -1 ) { 
-					cout << "InjChip = " << InjChip << endl;
-					oneChannelInjection_flag == false;
+				if ( injChip == -1 ) { 
+					cout << "InjChip = " << injChip << endl;
+					oneChannelInjection_flag = false;
 				}
 				else {
-					cout << "InjChip = " << InjChip << endl;
-					oneChannelInjection_flag == true;
+					cout << "InjChip = " << injChip << endl;
+					oneChannelInjection_flag = true;
 				}
 			}
 		}
