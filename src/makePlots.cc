@@ -939,6 +939,7 @@ void makePlots::yamlReader(){
 					oneChannelInjection_flag = false;
 				}
 				else {
+					injChip = 3 - injChip;
 					cout << "InjChip = " << injChip << endl;
 					oneChannelInjection_flag = true;
 				}
