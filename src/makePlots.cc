@@ -306,9 +306,10 @@ void makePlots::PlotProducer(){
 			mip_allCh[channel][event] = energy_mip;
 		}
 
+		/// Injection XTalk calculation
 		if ( chip == 3 ) {
 			for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-				/// Injection XTalk calculation
+
 				int ichip = ichannel / NCH;
 				int inj_channel;
 				if ( oneChannelInjection_flag )
@@ -322,7 +323,7 @@ void makePlots::PlotProducer(){
 					XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][event];
 					AverageEvents++;
 				}
-				// Calulate ring Energy
+				/// Calulate event ring Energy
 				int iring;
 				iring = ringPositionFinder( inj_channel, ichannel );
 				if( iring > -1 ) {
@@ -333,11 +334,23 @@ void makePlots::PlotProducer(){
 				}
 			}
 
-			for(int ichip = 0; ichip < NCHIP; ichip++){
-				for(int iring = 1; iring < NRings; iring++) {
-					XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
+			/// Calculate XTalkCoupling 
+			if ( oneChannelInjection_flag ) {
+				for(int ichip = 0; ichip < NCHIP; ichip++){
+					for(int iring = 1; iring < NRings; iring++) {
+						XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
+					}
 				}
 			}
+			else {
+					for(int iring = 1; iring < NRings; iring++) {
+						XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+					}
+
+			}
+
+			
+			
 		}
 	
 	}
@@ -477,7 +490,7 @@ void makePlots::PlotProducer(){
 
 		TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
 		for(int iring = 1; iring < NRings; iring++){
-			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], mip_Ring_1Chip[iring] );
+			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
 			sprintf(title,"ring %d", iring);
 			gXTalkCoupling->SetTitle(title);
 			gXTalkCoupling->SetName(title);
