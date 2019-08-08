@@ -941,10 +941,11 @@ void makePlots::yamlReader(){
 
 				if (start == -1) {
 					getline(yamlFile, line);
+					cout << line << endl;
 					start = line.find_last_of("-");
-					searchstr = line.erase(0,start+2);
+					searchstr = line.erase(0,start);
+					cout << searchstr << endl;
 					injCh = atoi(searchstr.c_str());
-					cout << "hi" << endl;
 				}
 				
 				cout << "InjCh = " << injCh << endl;
