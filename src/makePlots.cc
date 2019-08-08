@@ -292,240 +292,240 @@ void makePlots::PlotProducer(){
 			}
 		}
 	
-		/// Injection & Cross Talk Analysis
-		for(int ich = 0; ich < NCH; ich++){
-			int channel      = ich + chip*64;
-			double hg = hg_sig[ich][MaxTS_sca];
-			double lg = lg_sig[ich][MaxTS_sca];
-			double tot = tot_slow[ich];
+// 		/// Injection & Cross Talk Analysis
+// 		for(int ich = 0; ich < NCH; ich++){
+// 			int channel      = ich + chip*64;
+// 			double hg = hg_sig[ich][MaxTS_sca];
+// 			double lg = lg_sig[ich][MaxTS_sca];
+// 			double tot = tot_slow[ich];
 			
-			hg_allCh[channel][event]  = hg;
-			lg_allCh[channel][event]  = lg;
-			tot_allCh[channel][event] = tot;
+// 			hg_allCh[channel][event]  = hg;
+// 			lg_allCh[channel][event]  = lg;
+// 			tot_allCh[channel][event] = tot;
 
-			/// mip conversion
-			double energy_mip = mipConverter( hg, lg, tot, channel);
-			mip_allCh[channel][event] = energy_mip;
-		}
+// 			/// mip conversion
+// 			double energy_mip = mipConverter( hg, lg, tot, channel);
+// 			mip_allCh[channel][event] = energy_mip;
+// 		}
 
-		/// Injection XTalk calculation
-		if ( chip == 3 ) {
-			for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+// 		/// Injection XTalk calculation
+// 		if ( chip == 3 ) {
+// 			for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
 
-				int ichip = ichannel / NCH;
-				int inj_channel;
-				if ( oneChannelInjection_flag )
-					inj_channel = ( injChip * NCH ) + injCh;
-				else
-					inj_channel = ( ichip * NCH ) + injCh;
+// 				int ichip = ichannel / NCH;
+// 				int inj_channel;
+// 				if ( oneChannelInjection_flag )
+// 					inj_channel = ( injChip * NCH ) + injCh;
+// 				else
+// 					inj_channel = ( ichip * NCH ) + injCh;
 
-				XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
-				//cout << " event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
-				if( event>50 && event<=700 ){
-					XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][event];
-					AverageEvents++;
-				}
-				/// Calulate event ring Energy
-				int iring;
-				iring = ringPositionFinder( inj_channel, ichannel );
-				if( iring > -1 ) {
-					if ( oneChannelInjection_flag )
-						mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
-					else
-						mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
-				}
-			}
+// 				XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
+// 				//cout << " event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
+// 				if( event>50 && event<=700 ){
+// 					XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][event];
+// 					AverageEvents++;
+// 				}
+// 				/// Calulate event ring Energy
+// 				int iring;
+// 				iring = ringPositionFinder( inj_channel, ichannel );
+// 				if( iring > -1 ) {
+// 					if ( oneChannelInjection_flag )
+// 						mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
+// 					else
+// 						mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
+// 				}
+// 			}
 
-			/// Calculate XTalkCoupling 
-			if ( oneChannelInjection_flag ) {
-				for(int iring = 1; iring < NRings; iring++) {
-					XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
-				}
-			}
-			else {
-				for(int ichip = 0; ichip < NCHIP; ichip++){
-					for(int iring = 1; iring < NRings; iring++) {
-						XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
-					}
-				}
-			}
+// 			/// Calculate XTalkCoupling 
+// 			if ( oneChannelInjection_flag ) {
+// 				for(int iring = 1; iring < NRings; iring++) {
+// 					XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+// 				}
+// 			}
+// 			else {
+// 				for(int ichip = 0; ichip < NCHIP; ichip++){
+// 					for(int iring = 1; iring < NRings; iring++) {
+// 						XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
+// 					}
+// 				}
+// 			}
 
 			
 			
-		}
+// 		}
 	
-	}
+// 	}
 
-	/// --------------- End of Loop --------------- ///
+// 	/// --------------- End of Loop --------------- ///
 
-	/// --------------- Start of Loop --------------- ///
-	for(int entry = 0; entry < Chain2->GetEntries(); entry++){
-		Chain2->GetEntry(entry);
+// 	/// --------------- Start of Loop --------------- ///
+// 	for(int entry = 0; entry < Chain2->GetEntries(); entry++){
+// 		Chain2->GetEntry(entry);
 		
-		for (int ihit = 0; ihit < channelID->size(); ihit++){
-			//cout << "" << endl;
+// 		for (int ihit = 0; ihit < channelID->size(); ihit++){
+// 			//cout << "" << endl;
 			
-		}
+// 		}
 		
-	}
+// 	}
 
 	
-	for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-		XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
-		for (int sca = 0; sca < NSCA; sca++){
-			if (ichannel%2 == 1) continue;
-			h_hgPedestal[sca][ichannel]->Fit("gaus","Q");
-			hgFitMean [ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
-			hgFitSigma[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
-			//if ( hgFitMean[ichannel][sca] > 200 ) 
-			//cout << " ichannel " << ichannel << " sca " << sca << " Mean " << hgFitMean[ichannel][sca] << " Sigma " << hgFitSigma[ichannel][sca] << endl;
-			h_lgPedestal[sca][ichannel]->Fit("gaus","Q");
-			lgFitMean [ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
-			lgFitSigma[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
+// 	for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+// 		XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
+// 		for (int sca = 0; sca < NSCA; sca++){
+// 			if (ichannel%2 == 1) continue;
+// 			h_hgPedestal[sca][ichannel]->Fit("gaus","Q");
+// 			hgFitMean [ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
+// 			hgFitSigma[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
+// 			//if ( hgFitMean[ichannel][sca] > 200 ) 
+// 			//cout << " ichannel " << ichannel << " sca " << sca << " Mean " << hgFitMean[ichannel][sca] << " Sigma " << hgFitSigma[ichannel][sca] << endl;
+// 			h_lgPedestal[sca][ichannel]->Fit("gaus","Q");
+// 			lgFitMean [ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
+// 			lgFitSigma[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
 	  
-			hgMean [ichannel][sca] /= Nevents;
-			lgMean [ichannel][sca] /= Nevents;
-		}
-	}
-	for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-		for(int sca = 0; sca < NSCA; sca++){
-			hgSigma[ichannel][sca] /= Nevents;
-			lgSigma[ichannel][sca] /= Nevents;
-			hgSigma[ichannel][sca] -= ( hgMean[ichannel][sca] * hgMean[ichannel][sca] );
-			lgSigma[ichannel][sca] -= ( lgMean[ichannel][sca] * lgMean[ichannel][sca] );
-			hgSigma[ichannel][sca] = sqrt( hgSigma[ichannel][sca] );
-			lgSigma[ichannel][sca] = sqrt( hgSigma[ichannel][sca] );
-		}
-	}
+// 			hgMean [ichannel][sca] /= Nevents;
+// 			lgMean [ichannel][sca] /= Nevents;
+// 		}
+// 	}
+// 	for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+// 		for(int sca = 0; sca < NSCA; sca++){
+// 			hgSigma[ichannel][sca] /= Nevents;
+// 			lgSigma[ichannel][sca] /= Nevents;
+// 			hgSigma[ichannel][sca] -= ( hgMean[ichannel][sca] * hgMean[ichannel][sca] );
+// 			lgSigma[ichannel][sca] -= ( lgMean[ichannel][sca] * lgMean[ichannel][sca] );
+// 			hgSigma[ichannel][sca] = sqrt( hgSigma[ichannel][sca] );
+// 			lgSigma[ichannel][sca] = sqrt( hgSigma[ichannel][sca] );
+// 		}
+// 	}
 
-	/// Plots!!!!!
-	cdinjCh->cd();
-	if(!oneChannelInjection_flag) {
-		for(int ichip = 0; ichip < NCHIP; ichip++){
-			int inj_channel = (ichip*64) + injCh;
+// 	/// Plots!!!!!
+// 	cdinjCh->cd();
+// 	if(!oneChannelInjection_flag) {
+// 		for(int ichip = 0; ichip < NCHIP; ichip++){
+// 			int inj_channel = (ichip*64) + injCh;
 	
-			TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[inj_channel] );
-			sprintf(title,"hg");
-			ginjCh_hg->SetTitle(title);
-			ginjCh_hg->SetName(title);
-			ginjCh_hg->SetMarkerColor(P.Color(0));
-			TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[inj_channel] );
-			sprintf(title,"lg");
-			ginjCh_lg->SetTitle(title);
-			ginjCh_lg->SetName(title);
-			ginjCh_lg->SetMarkerColor(P.Color(1));
-			TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[inj_channel] );
-			sprintf(title,"tot");
-			ginjCh_tot->SetTitle(title);
-			ginjCh_tot->SetName(title);
-			ginjCh_tot->SetMarkerColor(P.Color(2));
-			TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[inj_channel] );
-			sprintf(title,"mip_InjCh%d_chip%d", injCh, ichip);
-			ginjCh_mip->SetTitle(title);
-			ginjCh_mip->SetName(title);
-			ginjCh_mip->Write();
+// 			TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[inj_channel] );
+// 			sprintf(title,"hg");
+// 			ginjCh_hg->SetTitle(title);
+// 			ginjCh_hg->SetName(title);
+// 			ginjCh_hg->SetMarkerColor(P.Color(0));
+// 			TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[inj_channel] );
+// 			sprintf(title,"lg");
+// 			ginjCh_lg->SetTitle(title);
+// 			ginjCh_lg->SetName(title);
+// 			ginjCh_lg->SetMarkerColor(P.Color(1));
+// 			TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[inj_channel] );
+// 			sprintf(title,"tot");
+// 			ginjCh_tot->SetTitle(title);
+// 			ginjCh_tot->SetName(title);
+// 			ginjCh_tot->SetMarkerColor(P.Color(2));
+// 			TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[inj_channel] );
+// 			sprintf(title,"mip_InjCh%d_chip%d", injCh, ichip);
+// 			ginjCh_mip->SetTitle(title);
+// 			ginjCh_mip->SetName(title);
+// 			ginjCh_mip->Write();
 	
-			TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
-			multig_InjCh_hltot->Add(ginjCh_hg);
-			multig_InjCh_hltot->Add(ginjCh_lg);
-			multig_InjCh_hltot->Add(ginjCh_tot);
-			sprintf(title,"hglgtot_InjCh%d_chip%d", injCh, ichip);
-			multig_InjCh_hltot->SetTitle(title);
-			multig_InjCh_hltot->SetName(title);
-			multig_InjCh_hltot->Write();
+// 			TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
+// 			multig_InjCh_hltot->Add(ginjCh_hg);
+// 			multig_InjCh_hltot->Add(ginjCh_lg);
+// 			multig_InjCh_hltot->Add(ginjCh_tot);
+// 			sprintf(title,"hglgtot_InjCh%d_chip%d", injCh, ichip);
+// 			multig_InjCh_hltot->SetTitle(title);
+// 			multig_InjCh_hltot->SetName(title);
+// 			multig_InjCh_hltot->Write();
 
 
-			/// Xtalk vs dac_ctrl
-			TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
-			for(int iring = 1; iring < NRings; iring++){
-				TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
-				sprintf(title,"ring %d", iring);
-				gXTalkCoupling->SetTitle(title);
-				gXTalkCoupling->SetName(title);
-				gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
-				gXTalkCoupling->SetLineWidth(0);
-				gXTalkCoupling->SetFillColor(0);
-				multig_XTalkCoupling_ring->Add(gXTalkCoupling);
-			}
-			sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, ichip);
-			multig_XTalkCoupling_ring->SetTitle(title);
-			multig_XTalkCoupling_ring->SetName(title);
-			multig_XTalkCoupling_ring->Draw("AP");
-			c->Update();
-			multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.5);
-			multig_XTalkCoupling_ring->Write();
-		}
-	}
+// 			/// Xtalk vs dac_ctrl
+// 			TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
+// 			for(int iring = 1; iring < NRings; iring++){
+// 				TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
+// 				sprintf(title,"ring %d", iring);
+// 				gXTalkCoupling->SetTitle(title);
+// 				gXTalkCoupling->SetName(title);
+// 				gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
+// 				gXTalkCoupling->SetLineWidth(0);
+// 				gXTalkCoupling->SetFillColor(0);
+// 				multig_XTalkCoupling_ring->Add(gXTalkCoupling);
+// 			}
+// 			sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, ichip);
+// 			multig_XTalkCoupling_ring->SetTitle(title);
+// 			multig_XTalkCoupling_ring->SetName(title);
+// 			multig_XTalkCoupling_ring->Draw("AP");
+// 			c->Update();
+// 			multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.5);
+// 			multig_XTalkCoupling_ring->Write();
+// 		}
+// 	}
 	
-	/// One channel injection
-	else if ( oneChannelInjection_flag ){
-		int inj_channel = injCh + (injChip * NCH);
-		TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[inj_channel] );
-		sprintf(title,"hg");
-		ginjCh_hg->SetTitle(title);
-		ginjCh_hg->SetName(title);
-		ginjCh_hg->SetMarkerColor(P.Color(0));
-		TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[inj_channel] );
-		sprintf(title,"lg");
-		ginjCh_lg->SetTitle(title);
-		ginjCh_lg->SetName(title);
-		ginjCh_lg->SetMarkerColor(P.Color(1));
-		TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[inj_channel] );
-		sprintf(title,"tot");
-		ginjCh_tot->SetTitle(title);
-		ginjCh_tot->SetName(title);
-		ginjCh_tot->SetMarkerColor(P.Color(2));
-		TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
-		multig_InjCh_hltot->Add(ginjCh_hg);
-		multig_InjCh_hltot->Add(ginjCh_lg);
-		multig_InjCh_hltot->Add(ginjCh_tot);
-		sprintf(title,"hglgtot_InjCh%d_chip%d", injCh, injChip);
-		multig_InjCh_hltot->SetTitle(title);
-		multig_InjCh_hltot->SetName(title);
-		multig_InjCh_hltot->Write();
+// 	/// One channel injection
+// 	else if ( oneChannelInjection_flag ){
+// 		int inj_channel = injCh + (injChip * NCH);
+// 		TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[inj_channel] );
+// 		sprintf(title,"hg");
+// 		ginjCh_hg->SetTitle(title);
+// 		ginjCh_hg->SetName(title);
+// 		ginjCh_hg->SetMarkerColor(P.Color(0));
+// 		TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[inj_channel] );
+// 		sprintf(title,"lg");
+// 		ginjCh_lg->SetTitle(title);
+// 		ginjCh_lg->SetName(title);
+// 		ginjCh_lg->SetMarkerColor(P.Color(1));
+// 		TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[inj_channel] );
+// 		sprintf(title,"tot");
+// 		ginjCh_tot->SetTitle(title);
+// 		ginjCh_tot->SetName(title);
+// 		ginjCh_tot->SetMarkerColor(P.Color(2));
+// 		TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
+// 		multig_InjCh_hltot->Add(ginjCh_hg);
+// 		multig_InjCh_hltot->Add(ginjCh_lg);
+// 		multig_InjCh_hltot->Add(ginjCh_tot);
+// 		sprintf(title,"hglgtot_InjCh%d_chip%d", injCh, injChip);
+// 		multig_InjCh_hltot->SetTitle(title);
+// 		multig_InjCh_hltot->SetName(title);
+// 		multig_InjCh_hltot->Write();
 
-		TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[inj_channel] );
-		sprintf(title,"mip_InjCh%d_chip%d", injCh, injChip);
-		ginjCh_mip->SetTitle(title);
-		ginjCh_mip->SetName(title);
-		ginjCh_mip->Write();
+// 		TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[inj_channel] );
+// 		sprintf(title,"mip_InjCh%d_chip%d", injCh, injChip);
+// 		ginjCh_mip->SetTitle(title);
+// 		ginjCh_mip->SetName(title);
+// 		ginjCh_mip->Write();
 
-		TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
-		for(int iring = 1; iring < 3; iring++){
-			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
-			sprintf(title,"ring %d", iring);
-			gXTalkCoupling->SetTitle(title);
-			gXTalkCoupling->SetName(title);
-			gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
-			gXTalkCoupling->SetLineWidth(0);
-			gXTalkCoupling->SetFillColor(0);
-			multig_XTalkCoupling_ring->Add(gXTalkCoupling);
-		}
-		sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, injChip);
-		multig_XTalkCoupling_ring->SetTitle(title);
-		multig_XTalkCoupling_ring->SetName(title);
-		multig_XTalkCoupling_ring->Draw("AP");
-		multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.3);
-		multig_XTalkCoupling_ring->Write();
-	}
+// 		TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
+// 		for(int iring = 1; iring < 3; iring++){
+// 			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
+// 			sprintf(title,"ring %d", iring);
+// 			gXTalkCoupling->SetTitle(title);
+// 			gXTalkCoupling->SetName(title);
+// 			gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
+// 			gXTalkCoupling->SetLineWidth(0);
+// 			gXTalkCoupling->SetFillColor(0);
+// 			multig_XTalkCoupling_ring->Add(gXTalkCoupling);
+// 		}
+// 		sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, injChip);
+// 		multig_XTalkCoupling_ring->SetTitle(title);
+// 		multig_XTalkCoupling_ring->SetName(title);
+// 		multig_XTalkCoupling_ring->Draw("AP");
+// 		multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.3);
+// 		multig_XTalkCoupling_ring->Write();
+// 	}
   
-	/// 2D Average Xtalk 
-	int NNoisy = 8;
-	int NoisyChannel[8] = {248,186,214,120,126,42,254,190};
+// 	/// 2D Average Xtalk 
+// 	int NNoisy = 8;
+// 	int NoisyChannel[8] = {248,186,214,120,126,42,254,190};
 
-	TH2Poly *poly = new TH2Poly;
-	InitTH2Poly(*poly);
-	poly->SetMinimum(-0.1);
-	for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
- 		int ichip = ichannel / NCH;
-		float X, Y;
-		int forCH = ichannel / 2;
-		bool NoisyBool = false;
-		X = CHmap[forCH].first;
-		Y = CHmap[forCH].second;
-		if(ichannel%64 == injCh){
-			if(oneChannelInjection_flag==true && ichip==injChip) { poly->Fill(X,Y,-2); }
-			else if (oneChannelInjection_flag==true && ichip!=injChip) { poly->Fill(X,Y,XTalkCoupling_Average[ichannel]); }
+// 	TH2Poly *poly = new TH2Poly;
+// 	InitTH2Poly(*poly);
+// 	poly->SetMinimum(-0.1);
+// 	for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
+//  		int ichip = ichannel / NCH;
+// 		float X, Y;
+// 		int forCH = ichannel / 2;
+// 		bool NoisyBool = false;
+// 		X = CHmap[forCH].first;
+// 		Y = CHmap[forCH].second;
+// 		if(ichannel%64 == injCh){
+// 			if(oneChannelInjection_flag==true && ichip==injChip) { poly->Fill(X,Y,-2); }
+// 			else if (oneChannelInjection_flag==true && ichip!=injChip) { poly->Fill(X,Y,XTalkCoupling_Average[ichannel]); }
 			else { poly->Fill(X,Y,-2); }
 		}
 		else {
@@ -938,6 +938,8 @@ void makePlots::yamlReader(){
 				end = line.find("]");
 				searchstr = line.substr(start+1,end-start+1);
 				injCh = atoi(searchstr.c_str());
+
+				cout << start << endl;
 				//getline(yamlFile, line);
 				//start = line.find_last_of("-");
 				//searchstr = line.erase(0,start+2);
