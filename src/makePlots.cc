@@ -491,7 +491,7 @@ void makePlots::PlotProducer(){
 		ginjCh_mip->Write();
 
 		TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
-		for(int iring = 1; iring < NRings; iring++){
+		for(int iring = 1; iring < 3; iring++){
 			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
 			sprintf(title,"ring %d", iring);
 			gXTalkCoupling->SetTitle(title);
@@ -505,7 +505,7 @@ void makePlots::PlotProducer(){
 		multig_XTalkCoupling_ring->SetTitle(title);
 		multig_XTalkCoupling_ring->SetName(title);
 		multig_XTalkCoupling_ring->Draw("AP");
-		multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.5);
+		multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.3);
 		multig_XTalkCoupling_ring->Write();
 	}
   
