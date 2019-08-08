@@ -933,7 +933,7 @@ void makePlots::yamlReader(){
 	  
 			if ( line.find("channelIds:") != -1 ){
 				string tmp;
-				yamlFile >> tmp >> searchstr;
+				//yamlFile >> tmp >> searchstr;
 				start = line.find("[");
 				end = line.find("]");
 				searchstr = line.substr(start+1,end-start+1);
