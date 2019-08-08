@@ -336,17 +336,16 @@ void makePlots::PlotProducer(){
 
 			/// Calculate XTalkCoupling 
 			if ( oneChannelInjection_flag ) {
+				for(int iring = 1; iring < NRings; iring++) {
+					XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+				}
+			}
+			else {
 				for(int ichip = 0; ichip < NCHIP; ichip++){
 					for(int iring = 1; iring < NRings; iring++) {
 						XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
 					}
 				}
-			}
-			else {
-					for(int iring = 1; iring < NRings; iring++) {
-						XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
-					}
-
 			}
 
 			
