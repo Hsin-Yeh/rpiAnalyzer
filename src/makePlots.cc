@@ -939,11 +939,13 @@ void makePlots::yamlReader(){
 				searchstr = line.substr(start+1,end-start+1);
 				injCh = atoi(searchstr.c_str());
 
-				cout << start << endl;
-				//getline(yamlFile, line);
-				//start = line.find_last_of("-");
-				//searchstr = line.erase(0,start+2);
-				//injCh = atoi(searchstr.c_str());
+				if (start == -1) {
+					getline(yamlFile, line);
+					start = line.find_last_of("-");
+					searchstr = line.erase(0,start+2);
+					injCh = atoi(searchstr.c_str());
+				}
+				
 				cout << "InjCh = " << injCh << endl;
 			}
 			else if ( line.find("acquisitionType") != -1 ){
