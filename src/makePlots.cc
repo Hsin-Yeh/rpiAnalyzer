@@ -933,7 +933,6 @@ void makePlots::yamlReader(){
 	  
 			if ( line.find("channelIds:") != -1 ){
 				string tmp;
-				//yamlFile >> tmp >> searchstr;
 				start = line.find("[");
 				end = line.find("]");
 				searchstr = line.substr(start+1,end-start+1);
@@ -943,7 +942,7 @@ void makePlots::yamlReader(){
 					getline(yamlFile, line);
 					cout << line << endl;
 					start = line.find_last_of("-");
-					searchstr = line.erase(0,start);
+					searchstr = line.erase(0,start+2);
 					cout << searchstr << endl;
 					injCh = atoi(searchstr.c_str());
 				}
