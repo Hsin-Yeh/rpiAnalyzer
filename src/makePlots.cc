@@ -944,6 +944,7 @@ void makePlots::yamlReader(){
 					start = line.find_last_of("-");
 					searchstr = line.erase(0,start+2);
 					injCh = atoi(searchstr.c_str());
+					cout << "hi" << endl;
 				}
 				
 				cout << "InjCh = " << injCh << endl;
