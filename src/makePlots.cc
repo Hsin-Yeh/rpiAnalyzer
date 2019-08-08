@@ -114,6 +114,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
 
 	app = new TApplication("app",0,0);
 	c = new TCanvas();
+	gROOT->SetBatch(kFALSE);
 	cout << "----------Init complete----------" << endl << endl;
 }
 
