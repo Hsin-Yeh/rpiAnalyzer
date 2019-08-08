@@ -114,7 +114,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
 
 	app = new TApplication("app",0,0);
 	c = new TCanvas();
-	gROOT->SetBatch(kFALSE);
+	
 	cout << "----------Init complete----------" << endl << endl;
 }
 
@@ -124,6 +124,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
 void makePlots::PlotProducer(){
 
 	char title[200];
+	gROOT->SetBatch(kFALSE);
 
 	/// Set Output Root File
 	int start = input_fileName.find_last_of("/");

@@ -8,7 +8,7 @@ OBJECTS= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCTXT)=.o))
 INC=-I include
 INCDIR= include
 
-CXXFLAGS=-g -m64 -O2 -Wall -Wno-unused-variable -Wno-unused-command-line-argument -std=c++0x $(INC)
+CXXFLAGS=-g -m64 -O2 -Wall -Wno-unused-variable -Wno-unused-command-line-argument -Wno-maybe-uninitialized -std=c++0x $(INC)
 ROOTFLAGS=$(shell root-config --libs --cflags --glibs)
 
 $(TARGET): $(OBJECTS)
