@@ -171,10 +171,6 @@ void makePlots::PlotProducer(){
 		hgSigma[i]       = new float[NSCA];
 		lgSigma[i]       = new float[NSCA];
 	}
-	double **mip_Ring_1Chip = new double*[NRings];
-	for(int i = 0; i < NRings; i++){
-		mip_Ring_1Chip[i] = new double[Nevents];
-	}
 	double **hg_SubPed = new double*[NSCA];
 	double **lg_SubPed = new double*[NSCA];
 	for(int i = 0; i < NSCA; i++){
@@ -197,6 +193,14 @@ void makePlots::PlotProducer(){
 			XTalkCoupling_Ring_4Chip[i][j] = new double[Nevents];
 		}
 	}
+	double **mip_Ring_1Chip           = new double*[NRings];
+	double **XTalkCoupling_Ring_1Chip = new double*[NRings];
+	for(int i = 0; i < NRings; i++){
+		mip_Ring_1Chip[i]           = new double[Nevents];
+		XTalkCoupling_Ring_1Chip[i] = new double[Nevents];
+	}
+
+
 
 	/// Declare TDirectories
 	sprintf(title,"injCh%d",injCh);
@@ -473,7 +477,7 @@ void makePlots::PlotProducer(){
 
 		TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
 		for(int iring = 1; iring < NRings; iring++){
-			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_4Chip[iring][injChip] );
+			TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], mip_Ring_1Chip[iring] );
 			sprintf(title,"ring %d", iring);
 			gXTalkCoupling->SetTitle(title);
 			gXTalkCoupling->SetName(title);
