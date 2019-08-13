@@ -1,0 +1,22 @@
+daq_options:
+  acquisitionType: standard
+  channelIds: []
+  channelIdsToMask:
+  - []
+  - []
+  - []
+  - []
+  chipId: -1
+  compressRawData: true
+  externalChargeInjection: false
+  headerSize: 192
+  injectionDAC: 1000
+  nEvent: 1000
+  preampFeedbackCapacitance: 8
+  pulseDelay: 47
+  shapingTime: 35
+  toaDACThreshold: 230
+  totDACThreshold: 200
+glb_options: {moduleNumber: Example, outputRawDataPath: data, outputYamlPath: yaml,
+  serverCodePath: /home/pi/rpi-daq, serverIpAdress: localhost, startServerManually: false,
+  storeYamlFile: true}
