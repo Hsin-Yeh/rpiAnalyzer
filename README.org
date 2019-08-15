@@ -2,7 +2,7 @@ This branch is for analyzing rpi test data
 * Setup 
    #+BEGIN_SRC sh
    git clone https://github.com/Hsin-Yeh/RPI_analysis.git 
-   cd RPI_analysis/Analysis
+   cd rpiAnalyzer
    git pull
    make 
    #+END_SRC
