@@ -4,7 +4,6 @@ This branch is for analyzing rpi test data
    git clone https://github.com/Hsin-Yeh/RPI_analysis.git 
    cd RPI_analysis/Analysis
    git pull
-   git checkout injection_analysis_CMSSW 
    make 
    #+END_SRC
    
@@ -13,13 +12,11 @@ This branch is for analyzing rpi test data
 This is an example if one wants to do some general checks and output some plots. The output plots will store in a root file in the "root_plot" directory 
 
    #+BEGIN_SRC sh
-   inputFile="moduleExample/ana_output/ModuleExample_27-6-2019_19-50_pedestal.root"
-   outputFile="plot_ModuleExample_27-6-2019_19-50_pedestal.root"
-   ls ${inputFile} > data_input.txt
+   ls moduleExample/ana_output/ModuleExample_10-8-2019_20-57_pedestal.root > data_input.txt
    ./makePlots
-   root root_plot/${outputFile} -l
+   root root_plot/plot_ModuleExample_10-8-2019_20-57_pedestal.root 
    #+END_SRC
-     
+
 *** High gain pulse display
 If one wants to display the data pulse shape 
 
@@ -47,6 +44,10 @@ I have created a directory "moduleExample" containing two runs of rpi data. One 
 
 *** Input root file leaf definition 
 You can find the definitions in include/makePlots.h
+
+*** ntugrid5 users 
+rpi data is stored in /wk_cms2/cmshgc/rpi_data
+
 
 * Study topics 
 1. pedestal & noise 

@@ -124,7 +124,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
 void makePlots::PlotProducer(){
 
 	char title[200];
-	gROOT->SetBatch(kFALSE);
+	//gROOT->SetBatch(kFALSE);
 
 	/// Set Output Root File
 	int start = input_fileName.find_last_of("/");
@@ -349,9 +349,6 @@ void makePlots::PlotProducer(){
 					}
 				}
 			}
-
-			
-			
 		}
 	
 	}
@@ -940,10 +937,8 @@ void makePlots::yamlReader(){
 
 				if (start == -1) {
 					getline(yamlFile, line);
-					cout << line << endl;
 					start = line.find_last_of("-");
 					searchstr = line.erase(0,start+2);
-					cout << searchstr << endl;
 					injCh = atoi(searchstr.c_str());
 				}
 				

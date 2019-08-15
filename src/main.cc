@@ -57,6 +57,7 @@ int main(int argc, char** argv){
 			anaType = 1;
 			pulseDisplay_type = 1; 
 			iarg++;
+
 		}
 		else if ( arg == "-s" ) {
 			anaType = 1;
