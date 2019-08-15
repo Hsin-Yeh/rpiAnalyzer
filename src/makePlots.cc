@@ -111,7 +111,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
 		hg_sig[i] = new double[NSCA];
 		lg_sig[i] = new double[NSCA];
 	}
-
+	gROOT->SetBatch("kTRUE");
 	app = new TApplication("app",0,0);
 	c = new TCanvas();
 	
