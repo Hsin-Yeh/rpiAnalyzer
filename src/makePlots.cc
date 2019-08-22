@@ -9,7 +9,7 @@
 #include "TSystem.h"
 #include "TImage.h"
 
-#define DEBUG
+//#define DEBUG
 
 //Constructor
 makePlots::makePlots(TChain* chain1, TChain* chain2):Chain1(chain1),Chain2(chain2)
