@@ -1,4 +1,5 @@
 #include "makePlots.h"
+#include "rootFileIntegrator.h"
 #include "PlotSetting.h"
 #include <fstream>
 #include <iostream>
@@ -102,7 +103,7 @@ int main(int argc, char** argv){
 	}
 	if ( makePlots_flag ) { main_makePlots(); }
 	else if ( help_flag ) { main_help(); }
-  
+	
 	return (0);
 }
 
@@ -121,25 +122,29 @@ void main_makePlots() {
 	}
 	else
 		cout << "There is no input root file written in the input.txt!" << endl;
-  
-	makePlots M(chain1, chain2);
-	M.input_fileName = filename;
-	M.oneChannelInjection_flag = oneChannelInjection_flag;
-	M.subPed_flag = subPed_flag;
-	M.Init( pedfile, gainfile, noisyfile );
+
+	makePlots* M = new makePlots(chain1, chain2);
+	M->input_fileName = filename;
+	M->oneChannelInjection_flag = oneChannelInjection_flag;
+	M->subPed_flag = subPed_flag;
+	M->Init( pedfile, gainfile, noisyfile );
 	if ( anaType == 0 ) {
 		cout << "Processing PlotProducer " << endl << endl;
-		M.PlotProducer();
+		if ( M->acquisitionType == "standard" ) { M->pedestalPlotter(); }
+		else if ( M->acquisitionType == "sweep" ) { M->sweepPlotter(); }
 	}
 	else if ( anaType == 1 ) {
 		cout << "Processing Pulse Displayer  " << endl << endl;
-		M.Pulse_display( displayChannel, pulseDisplay_type, lowerR, upperR, startEv );
+		M->Pulse_display( displayChannel, pulseDisplay_type, lowerR, upperR, startEv );
 	}
 	else if ( anaType == 2 ) {
 		cout << "Processing Cosmic Analyzer   " << endl << endl;
-		M.cosmicAnalyzer();
+		M->cosmicAnalyzer();
 	}
+	
+	delete M;
 }
+
 
 /// -------------------- main_help -------------------- ///
 void main_help() {
