@@ -1497,12 +1497,16 @@ void makePlots::injectionPlots(){
 	    gXTalkCoupling->SetFillColor(0);
 	    multig_XTalkCoupling_ring->Add(gXTalkCoupling);
 	}
-	sprintf(title,"E/EInj InjCh%d chip%d", injCh, ichip);
+	sprintf(title,"EfirstRing/EInj InjCh%d chip%d", injCh, ichip);
 	multig_XTalkCoupling_ring->SetTitle(title);
 	multig_XTalkCoupling_ring->SetName(title);
 	multig_XTalkCoupling_ring->Draw("AP");
 	c->Update();
-	multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.5);
+	multig_XTalkCoupling_ring->GetXaxis()->SetTitle("Injected Charge [DAC]");
+	multig_XTalkCoupling_ring->GetYaxis()->SetTitle("EfirstRing / EInj");
+	multig_XTalkCoupling_ring->GetYaxis()->SetTitleOffset(1.2);
+	multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.1,0.1);
+	multig_XTalkCoupling_ring->GetXaxis()->SetRangeUser(200,1000);
 	multig_XTalkCoupling_ring->Write();
 	sprintf(title,"%s/XtalkCoupling_InjCh%d_chip%d.png", plot_dir, injCh, ichip);
 	c->SaveAs(title);
