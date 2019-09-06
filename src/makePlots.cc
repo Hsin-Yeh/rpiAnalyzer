@@ -1497,13 +1497,17 @@ void makePlots::injectionPlots(){
 	    gXTalkCoupling->SetFillColor(0);
 	    multig_XTalkCoupling_ring->Add(gXTalkCoupling);
 	}
-	sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, ichip);
+	sprintf(title,"E/EInj InjCh%d chip%d", injCh, ichip);
 	multig_XTalkCoupling_ring->SetTitle(title);
 	multig_XTalkCoupling_ring->SetName(title);
 	multig_XTalkCoupling_ring->Draw("AP");
 	c->Update();
 	multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.5);
 	multig_XTalkCoupling_ring->Write();
+	sprintf(title,"%s/XtalkCoupling_InjCh%d_chip%d.png", plot_dir, injCh, ichip);
+	c->SaveAs(title);
+	sprintf(title,"%s/XtalkCoupling_InjCh%d_chip%d.pdf", plot_dir, injCh, ichip);
+	c->SaveAs(title);
     }
 
 }
