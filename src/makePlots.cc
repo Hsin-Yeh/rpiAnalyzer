@@ -49,7 +49,13 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
     init_analysisParameter(); // always after init_rootBranch();
     init_rootDir();
     init_histo();
-    
+
+    // make directories
+    char command[100];
+    sprintf(command,"mkdir plots/%s",moduleNumber.c_str());
+    system(command);
+    sprintf(plot_dir,"plots/%s",moduleNumber.c_str());
+        
     // init Canvas 
     gROOT->SetBatch("kTRUE");
     app = new TApplication("app",0,0);
@@ -139,7 +145,6 @@ void makePlots::pedestalPlotter(){
     /// Fit
     fit_pedestalHisto();
 
-    
     ///
     /// Plots!!!!!
     ///
@@ -321,19 +326,19 @@ void makePlots::sweepPlotter(){
 
 
 ///
+/// ==================== const_injPlotter ==================== ///
+///
+///void makePlots::const_injPlotter() {
+
+    
+//}
+
+
+///
 /// ==================== cosmicAnalyzer ==================== ///
 ///
 void makePlots::cosmicAnalyzer(){
 	
-    /// Set Output Root File
-    int start = input_fileName.find_last_of("/");
-    int end   = input_fileName.find(".root");
-    string outf = input_fileName.substr(start+1,end-start-1);
-
-    sprintf(title,"cosmicAnalysis/plot_%s.root",outf.c_str());
-    TFile *outfile = new TFile(title,"recreate");
-    cout << "output file = " << title << endl;
-  
     /// Declare Parameters
     int TotalEntries = Chain1->GetEntries();
     int Nevents = TotalEntries/NCHIP;
@@ -1482,7 +1487,7 @@ void makePlots::injectionPlots(){
 
 	/// Xtalk vs dac_ctrl
 	TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
-	for(int iring = 1; iring < NRings; iring++){
+	for(int iring = 1; iring < 2; iring++){
 	    TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
 	    sprintf(title,"ring %d", iring);
 	    gXTalkCoupling->SetTitle(title);
@@ -1543,7 +1548,7 @@ void makePlots::oneChannelInjection_injectionPlots(){
     ginjCh_mip->Write();
 
     TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
-    for(int iring = 1; iring < 3; iring++){
+    for(int iring = 1; iring < 2; iring++){
 	TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
 	sprintf(title,"ring %d", iring);
 	gXTalkCoupling->SetTitle(title);
@@ -1561,6 +1566,8 @@ void makePlots::oneChannelInjection_injectionPlots(){
     multig_XTalkCoupling_ring->Write();
     
 }
+
+
 
 void makePlots::injectionPlots_allCh() {
 
@@ -1638,10 +1645,21 @@ void makePlots::XTalk_poly() {
 	    }
 	}
     }
-    sprintf(title,"XtalkCoupling_Poly_InjCh%d", injCh);
+    sprintf(title,"<E / EInj> InjCh%d", injCh);
+    gStyle->SetPaintTextFormat("2.2f");
     poly->SetTitle(title);
     poly->SetName(title);
-    poly->Write();
+    poly->SetMarkerSize(1);
+    poly->Draw("colztext");
+    latex.SetTextSize(0.05);
+    latex.SetTextAlign(13);  //align at top
+    latex.SetTextSize(0.03);
+    latex.DrawLatex(-7,-7,"*White pads are the charge injection pads");
+    //latex.DrawLatex(-7,-7.5,"*Each pad is filled with its energy divided by the enrgy of the injection channel energy on the same chip");
+    c->Update();
+    sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.pdf", plot_dir, injCh);
+    c->SaveAs(title);
+    c->Write();
 }
 
 void makePlots::Xtalk_1D(){
@@ -1663,7 +1681,13 @@ void makePlots::Xtalk_1D(){
     sprintf(title,"InjCh%d_XtalkCoupling_Connected_Channel", injCh);
     gXTalkCoupling_Cnct->SetTitle(title);
     gXTalkCoupling_Cnct->SetName(title);
+    gXTalkCoupling_Cnct->GetXaxis()->SetTitle("ChannelId");
+    gXTalkCoupling_Cnct->GetYaxis()->SetTitle("E / EInj");
     gXTalkCoupling_Cnct->Write();
+    sprintf(title,"%s/InjCh%d_XtalkCoupling_ConnectedChannels.pdf",plot_dir,injCh);
+    gXTalkCoupling_Cnct->Draw("AP");
+    c->Update();
+    c->SaveAs(title);
     TGraph* gXTalkCoupling_UnCnct = new TGraph(NCHANNEL/2, labelUnCnct , XTalkCoupling_UnCnct);
     sprintf(title,"InjCh%d_XtalkCoupling_UnConnected_Channel", injCh);
     gXTalkCoupling_UnCnct->SetTitle(title);

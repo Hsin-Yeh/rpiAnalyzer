@@ -16,6 +16,7 @@
 #include "TFile.h"
 #include "TDirectory.h"
 #include "PlotSetting.h"
+#include "TLatex.h"
 #include <string>
 #include <utility> //std::pair
 #include <map>     //std::map
@@ -115,6 +116,8 @@ private:
     char           title[200];
     int            TotalEntries;
     int            Nevents;
+    char           plot_dir[100];
+    TLatex         latex;
 
     // TDirectories
     TDirectory *cdinjCh;
