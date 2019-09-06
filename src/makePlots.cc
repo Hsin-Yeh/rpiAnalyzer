@@ -1646,7 +1646,7 @@ void makePlots::XTalk_poly() {
 	}
     }
     sprintf(title,"<E / EInj> InjCh%d", injCh);
-    gStyle->SetPaintTextFormat("2.2f");
+    gStyle->SetPaintTextFormat("2.3f");
     poly->SetTitle(title);
     poly->SetName(title);
     poly->SetMarkerSize(1);
@@ -1657,7 +1657,7 @@ void makePlots::XTalk_poly() {
     latex.DrawLatex(-7,-7,"*White pads are the charge injection pads");
     //latex.DrawLatex(-7,-7.5,"*Each pad is filled with its energy divided by the enrgy of the injection channel energy on the same chip");
     c->Update();
-    sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.pdf", plot_dir, injCh);
+    sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
     c->SaveAs(title);
     c->Write();
 }
@@ -1684,7 +1684,7 @@ void makePlots::Xtalk_1D(){
     gXTalkCoupling_Cnct->GetXaxis()->SetTitle("ChannelId");
     gXTalkCoupling_Cnct->GetYaxis()->SetTitle("E / EInj");
     gXTalkCoupling_Cnct->Write();
-    sprintf(title,"%s/InjCh%d_XtalkCoupling_ConnectedChannels.pdf",plot_dir,injCh);
+    sprintf(title,"%s/InjCh%d_XtalkCoupling_ConnectedChannels.png",plot_dir,injCh);
     gXTalkCoupling_Cnct->Draw("AP");
     c->Update();
     c->SaveAs(title);
