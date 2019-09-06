@@ -1659,6 +1659,7 @@ void makePlots::XTalk_poly() {
     poly->SetTitle(title);
     poly->SetName(title);
     poly->SetMarkerSize(1);
+    poly->SetMinimum(-0.05);
     poly->Draw("colztext");
     latex.SetTextSize(0.05);
     latex.SetTextAlign(13);  //align at top
