@@ -1450,7 +1450,8 @@ void makePlots::injectionPlots(){
     cdinj->cd();
     // hglgtot vs dac
     // mip vs dac
-    // XTalk_ring vs daq 
+    // XTalk_ring vs daq
+    TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
 	int inj_channel = (ichip*64) + injCh;
@@ -1487,33 +1488,33 @@ void makePlots::injectionPlots(){
 
 
 	/// Xtalk vs dac_ctrl
-	TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
 	for(int iring = 1; iring < 2; iring++){
 	    TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
-	    sprintf(title,"ring %d", iring);
+	    sprintf(title,"chip%d", ichip);
 	    gXTalkCoupling->SetTitle(title);
 	    gXTalkCoupling->SetName(title);
-	    gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
+	    gXTalkCoupling->SetMarkerColor(P.Color(ichip));
 	    gXTalkCoupling->SetLineWidth(0);
 	    gXTalkCoupling->SetFillColor(0);
 	    multig_XTalkCoupling_ring->Add(gXTalkCoupling);
 	}
-	sprintf(title,"EfirstRing/EInj InjCh%d chip%d", injCh, ichip);
-	multig_XTalkCoupling_ring->SetTitle(title);
-	multig_XTalkCoupling_ring->SetName(title);
-	multig_XTalkCoupling_ring->Draw("AP");
-	c->Update();
-	multig_XTalkCoupling_ring->GetXaxis()->SetTitle("Injected Charge [DAC]");
-	multig_XTalkCoupling_ring->GetYaxis()->SetTitle("EfirstRing / EInj");
-	multig_XTalkCoupling_ring->GetYaxis()->SetTitleOffset(1.2);
-	multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.1,0.1);
-	multig_XTalkCoupling_ring->GetXaxis()->SetRangeUser(200,1000);
-	multig_XTalkCoupling_ring->Write();
-	sprintf(title,"%s/XtalkCoupling_InjCh%d_chip%d.png", plot_dir, injCh, ichip);
-	c->SaveAs(title);
-	sprintf(title,"%s/XtalkCoupling_InjCh%d_chip%d.pdf", plot_dir, injCh, ichip);
-	c->SaveAs(title);
     }
+    sprintf(title,"EfirstRing/EInj InjCh%d", injCh);
+    multig_XTalkCoupling_ring->SetTitle(title);
+    multig_XTalkCoupling_ring->SetName(title);
+    multig_XTalkCoupling_ring->Draw("AP");
+    c->Update();
+    c->BuildLegend(0.75,0.2,0.85,0.35);
+    multig_XTalkCoupling_ring->GetXaxis()->SetTitle("Injected Charge [DAC]");
+    multig_XTalkCoupling_ring->GetYaxis()->SetTitle("EfirstRing / EInj");
+    multig_XTalkCoupling_ring->GetYaxis()->SetTitleOffset(1.2);
+    multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.1,0.1);
+    multig_XTalkCoupling_ring->GetXaxis()->SetRangeUser(200,1000);
+    multig_XTalkCoupling_ring->Write();
+    sprintf(title,"%s/XtalkCoupling_InjCh%d.png", plot_dir, injCh);
+    c->SaveAs(title);
+    sprintf(title,"%s/XtalkCoupling_InjCh%d.pdf", plot_dir, injCh);
+    c->SaveAs(title);
 
 }
 
@@ -1659,7 +1660,7 @@ void makePlots::XTalk_poly() {
     poly->SetTitle(title);
     poly->SetName(title);
     poly->SetMarkerSize(1);
-    poly->SetMinimum(-0.05);
+    poly->SetMinimum(-0.02);
     poly->Draw("colztext");
     latex.SetTextSize(0.05);
     latex.SetTextAlign(13);  //align at top
