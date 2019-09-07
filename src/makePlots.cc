@@ -43,7 +43,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
     //Crosstalk(injCh);
     P.root_logon();
 
-    //moduleNumber = "97";
+    moduleNumber = "97";
     // init private parameters
     init_outputFile();
     init_rootBranch();
