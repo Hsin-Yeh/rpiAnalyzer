@@ -1796,6 +1796,7 @@ void makePlots::output_xtalkCoupling() {
     sprintf(title,"xtalkCoupling_%s.txt",moduleNumber.c_str());
     f.open(title, ios::out | ios::app );
     cout << "write " << title << endl;
+    cout << XTalkCoupling_Ring_1Chip_average << endl;
     f << injChip << " " << injCh << " " << XTalkCoupling_Ring_1Chip_average << endl;
 }
 
