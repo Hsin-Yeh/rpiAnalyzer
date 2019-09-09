@@ -20,6 +20,7 @@ void xtalk_plot(){
 
     TCanvas *c = new TCanvas();
     TGraph *g = new TGraph(128, channelID, xtalk);
+    g->SetMarkerStyle(22);
     g->Draw("AP");
     c->Update();
     c->SaveAs("output.pdf");
