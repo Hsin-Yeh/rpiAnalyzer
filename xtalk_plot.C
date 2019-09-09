@@ -7,7 +7,7 @@ void xtalk_plot(){
     f.open(filename);
 
     double xtalk[128];
-    int channelID[128];
+    double channelID[128];
     while(!f.eof()){
 	int chip, ch;
 	double x;
