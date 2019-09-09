@@ -165,6 +165,8 @@ private:
 
     //analysis parameter
     double XTalkCoupling_Ring_1Chip_average;
+    double fit_intersept;
+    double fit_slope;
     double *XTalkCoupling_Average;    
     double *dac_ctrl;                 
     double *hg_NoisyChannel;          

@@ -1298,7 +1298,11 @@ void makePlots::init_rootDir() {
 	cdinjCh = outfile->mkdir(title);
     }
     else if ( acquisitionType == "sweep" ) {
-	sprintf(title,"InjCh%d",injCh);
+	if( !oneChannelInjection_flag )
+	    sprintf(title,"InjCh%d",injCh);
+	else 
+	    sprintf(title,"InjCh%d_InjChip%d",injCh, injChip);
+
 	cdinjCh = outfile->mkdir(title);
 	cdallCh = cdinjCh->mkdir("allCh_hglgtot");
 	cdinj = cdinjCh->mkdir("injection_analysis_plots");
@@ -1516,6 +1520,10 @@ void makePlots::injectionPlots(){
 	    gXTalkCoupling->SetMarkerColor(P.Color(ichip));
 	    gXTalkCoupling->SetLineWidth(0);
 	    gXTalkCoupling->SetFillColor(0);
+	    TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
+	    gXTalkCoupling->Fit("f1","R");
+	    fit_intersept = f1->GetParameter(0);
+	    fit_slope = f1->GetParameter(1);
 	    multig_XTalkCoupling_ring->Add(gXTalkCoupling);
 	}
     }
@@ -1586,6 +1594,10 @@ void makePlots::oneChannelInjection_injectionPlots(){
 	gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
 	gXTalkCoupling->SetLineWidth(0);
 	gXTalkCoupling->SetFillColor(0);
+	TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
+	gXTalkCoupling->Fit("f1","R");
+	fit_intersept = f1->GetParameter(0);
+	fit_slope = f1->GetParameter(1);
 	multig_XTalkCoupling_ring->Add(gXTalkCoupling);
     }
     sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, injChip);
@@ -1596,6 +1608,8 @@ void makePlots::oneChannelInjection_injectionPlots(){
     multig_XTalkCoupling_ring->Write();
     
 }
+
+
 
 
 
@@ -1675,7 +1689,11 @@ void makePlots::XTalk_poly() {
 	    }
 	}
     }
-    sprintf(title,"<E / EInj> InjCh%d", injCh);
+    if( !oneChannelInjection_flag )
+	sprintf(title,"<E / EInj> InjCh%d", injCh);
+    else 
+	sprintf(title,"<E / EInj> InjCh%d InjChip%d", injCh, injChip);
+
     gStyle->SetPaintTextFormat("2.3f");
     poly->SetTitle(title);
     poly->SetName(title);
@@ -1688,7 +1706,11 @@ void makePlots::XTalk_poly() {
     latex.DrawLatex(-7,-7,"*White pads are the charge injection pads");
     //latex.DrawLatex(-7,-7.5,"*Each pad is filled with its energy divided by the enrgy of the injection channel energy on the same chip");
     c->Update();
-    sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
+    if( !oneChannelInjection_flag )
+	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
+    else 
+	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d_InjChi%d.png", plot_dir, injCh, injChip);
+
     c->SaveAs(title);
     c->Write();
 }
@@ -1801,7 +1823,7 @@ void makePlots::output_xtalkCoupling() {
     f.open(title, ios::out | ios::app );
     cout << "write " << title << endl;
     cout << XTalkCoupling_Ring_1Chip_average << endl;
-    f << injChip << " " << injCh << " " << XTalkCoupling_Ring_1Chip_average << endl;
+    f << injChip << " " << injCh << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
 }
 
 
