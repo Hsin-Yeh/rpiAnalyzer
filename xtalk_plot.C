@@ -30,6 +30,7 @@ void xtalk_plot(){
     g_avg->SetTitle("charge injection xtalk");
     g_avg->Draw("AP");
     c->Update();
+    gPad->WaitPrimitive();
     c->SaveAs("output.pdf");
 
     TGraph *g_intersect = new TGraph(128, channelID, xtalk_intersect);
@@ -39,6 +40,7 @@ void xtalk_plot(){
     g_intersect->SetTitle("charge injection xtalk");
     g_intersect->Draw("AP");
     c->Update();
+    gPad->WaitPrimitive();
     c->SaveAs("output.pdf");
 
     TGraph *g_slope = new TGraph(128, channelID, xtalk_slope);
@@ -48,6 +50,7 @@ void xtalk_plot(){
     g_slope->SetTitle("charge injection xtalk");
     g_slope->Draw("AP");
     c->Update();
+    gPad->WaitPrimitive();
     c->SaveAs("output.pdf");
 
 }
