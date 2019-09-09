@@ -21,6 +21,9 @@ void xtalk_plot(){
     TCanvas *c = new TCanvas();
     TGraph *g = new TGraph(128, channelID, xtalk);
     g->SetMarkerStyle(22);
+    g->GetXaxis()->SetTitle("channelID");
+    g->GetYaxis()->SetTitle(" < EFirstRing / EInj > ");
+    g->SetTitle("charge injection xtalk");
     g->Draw("AP");
     c->Update();
     c->SaveAs("output.pdf");
