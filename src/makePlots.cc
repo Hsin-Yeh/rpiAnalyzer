@@ -308,11 +308,10 @@ void makePlots::sweepPlotter(){
 	    //cout << "" << endl;
 	}
     }
-
+    
+    XTalkCoupling_Ring_1Chip_average /= 500;
     for (int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
     	XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
-	XTalkCoupling_Ring_1Chip_average /= 500;
-	cout << XTalkCoupling_Ring_1Chip_average << endl;
     }
 
     /// Fit
