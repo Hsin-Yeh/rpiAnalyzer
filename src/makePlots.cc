@@ -279,10 +279,11 @@ void makePlots::sweepPlotter(){
 	    if ( oneChannelInjection_flag ) {
 		for(int iring = 1; iring < NRings; iring++) {
 		    XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
-		    if( event>200 && event<=700 ) {
-			XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[iring][event];
-		    }
 		}
+		if( event>200 && event<=700 ) {
+		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][event];
+		}
+
 	    }
 	    else {
 		for(int ichip = 0; ichip < NCHIP; ichip++){
