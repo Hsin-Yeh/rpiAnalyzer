@@ -1794,7 +1794,8 @@ void makePlots::toa_plot(){
 void makePlots::output_xtalkCoupling() {
     ofstream f;
     sprintf(title,"xtalkCoupling_%s.txt",moduleNumber.c_str());
-    f.open(title);
+    f.open(title, ios::out | ios::app );
+    cout << "write " << title << endl;
     f << injChip << " " << injCh << " " << XTalkCoupling_Ring_1Chip_average << endl;
 }
 
