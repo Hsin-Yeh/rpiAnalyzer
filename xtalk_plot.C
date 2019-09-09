@@ -18,7 +18,7 @@ void xtalk_plot(){
 	channelID[ich] = ich*2;
     }
 
-    TCanvas *C = new TCanvas();
+    TCanvas *c = new TCanvas();
     TGraph *g = new TGraph(128, channelID, xtalk);
     g->Draw("AP");
     c->Update();
