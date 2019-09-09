@@ -1823,7 +1823,7 @@ void makePlots::output_xtalkCoupling() {
     f.open(title, ios::out | ios::app );
     cout << "write " << title << endl;
     cout << XTalkCoupling_Ring_1Chip_average << endl;
-    f << injChip << " " << injCh << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
+    f << injChip << " " << injCh << " " << CHmap[injChip*32 + injCh/2].first << " " << CHmap[injChip*32 + injCh/2].second << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
 }
 
 

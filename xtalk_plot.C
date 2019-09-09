@@ -7,6 +7,8 @@ void xtalk_plot(){
     f.open(filename);
 
     double xtalk_avg[128];
+    double xtalk_intersect[128];
+    double xtalk_slope[128];
     double channelID[128];
     while(!f.eof()){
 	int chip, ch;
@@ -49,3 +51,20 @@ void xtalk_plot(){
     c->SaveAs("output.pdf");
 
 }
+
+ifstream f;
+f.open("");
+
+    double xtalk_avg[128];
+    double xtalk_intersect[128];
+    double xtalk_slope[128];
+    double channelID[128];
+    while(!f.eof()){
+	int chip, ch;
+	double avg, intersect, slope;
+	f >> chip >> ch >> avg >> intersect >> slope;
+	xtalk_avg[chip*32 + ch/2] = avg;
+	xtalk_intersect[chip*32 + ch/2]  = intersect;
+	xtalk_slope[chip*32 + ch/2]  = slope;
+    }
+
