@@ -268,8 +268,12 @@ void makePlots::sweepPlotter(){
 		int iring;
 		iring = ringPositionFinder( inj_channel, ichannel );
 		if( iring > -1 ) {
-		    if ( oneChannelInjection_flag )
+		    
+		    if ( oneChannelInjection_flag ) {
 			mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
+			if ( iring == 1 && event == 1 ) 
+			    ringChannelCount++;
+		    }
 		    else
 			mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
 		}
@@ -308,8 +312,8 @@ void makePlots::sweepPlotter(){
 	    //cout << "" << endl;
 	}
     }
-    
-    XTalkCoupling_Ring_1Chip_average /= 500;
+    cout << ringChannelCount << endl;
+    XTalkCoupling_Ring_1Chip_average = XTalkCoupling_Ring_1Chip_average / (500 * ringChannelCount); 
     for (int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
     	XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
     }
@@ -1213,6 +1217,7 @@ void makePlots::init_analysisParameter() {
 	XTalkCoupling_Average[ichannel] = 0;
     }
     XTalkCoupling_Ring_1Chip_average = 0;
+    ringChannelCount = 0;
     
 }
 
