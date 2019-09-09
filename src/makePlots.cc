@@ -10,7 +10,7 @@
 #include "TSystem.h"
 #include "TImage.h"
 
-//#define DEBUG
+#define DEBUG
 
 //Constructor
 makePlots::makePlots(TChain* chain1, TChain* chain2):Chain1(chain1),Chain2(chain2)
@@ -282,6 +282,9 @@ void makePlots::sweepPlotter(){
 		}
 		if( event>200 && event<=700 ) {
 		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][event];
+#ifdef DEBUG
+		    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
+#endif
 		}
 
 	    }
