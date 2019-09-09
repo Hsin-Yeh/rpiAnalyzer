@@ -282,9 +282,9 @@ void makePlots::sweepPlotter(){
 		}
 		if( event>200 && event<=700 ) {
 		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][event];
-//#ifdef DEBUG
+#ifdef DEBUG
 		    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
-//#endif
+#endif
 		}
 
 	    }
