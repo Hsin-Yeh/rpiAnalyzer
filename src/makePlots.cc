@@ -1624,6 +1624,7 @@ void makePlots::injectionPlots_allCh() {
     cdallCh->cd();
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
 	int ichip = ichannel / 64;
+	if ()
 	int inj_channel = (ichip*64) + injCh;
 	
 	TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[ichannel] );
@@ -1660,6 +1661,7 @@ void makePlots::injectionPlots_allCh() {
 	sprintf(title,"xtalk_Ch%d", ichannel);
 	gXTalkCoupling->SetTitle(title);
 	gXTalkCoupling->SetName(title);
+	iring = ringPositionFinder( inj_channel, ichannel );
 	gXTalkCoupling->Write();
     }
 

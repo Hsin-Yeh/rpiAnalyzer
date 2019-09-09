@@ -14,6 +14,7 @@ void xtalk_plot(){
 	int chip, ch;
 	double avg, posx, posy, intersect, slope;
 	f >> chip >> ch >> posx >> posy >> avg >> intersect >> slope;
+	cout << chip << " " << ch << " " << posx << " " << posy << " " << avg << " " << intersect << " " slope << endl;
 	xtalk_avg[chip*32 + ch/2] = avg;
 	xtalk_intersect[chip*32 + ch/2]  = intersect;
 	xtalk_slope[chip*32 + ch/2]  = slope;
