@@ -260,7 +260,7 @@ void makePlots::sweepPlotter(){
 		cout << " event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
 #endif
 	
-		if( event>50 && event<=700 ){
+		if( event>200 && event<=700 ){
 		    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][event];
 		    AverageEvents++;
 		}
@@ -279,6 +279,9 @@ void makePlots::sweepPlotter(){
 	    if ( oneChannelInjection_flag ) {
 		for(int iring = 1; iring < NRings; iring++) {
 		    XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+		    if( event>200 && event<=700 ) {
+			XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[iring][event];
+		    }
 		}
 	    }
 	    else {
@@ -304,6 +307,7 @@ void makePlots::sweepPlotter(){
 
     for (int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
     	XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
+	XTalkCoupling_Ring_1Chip_average /= (AverageEvents/NCHANNEL);
     }
 
     /// Fit
@@ -320,6 +324,11 @@ void makePlots::sweepPlotter(){
     XTalk_poly();      // XTalk 2d poly
     toa_plot();
 
+    ///
+    /// Output 
+    ///
+    output_xtalkCoupling();
+    
     outfile->Write();
     outfile->Close();
 
@@ -1117,7 +1126,7 @@ void makePlots::init_outputFile() {
 }
 
 void makePlots::init_analysisParameter() {
-    
+
     XTalkCoupling_Average    = new double[NCHANNEL];
     dac_ctrl                 = new double[Nevents];
     hg_NoisyChannel          = new double[Nevents];
@@ -1194,6 +1203,13 @@ void makePlots::init_analysisParameter() {
 	hg_sig[i] = new double[NSCA];
 	lg_sig[i] = new double[NSCA];
     }
+
+    
+    for( int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
+	XTalkCoupling_Average[ichannel] = 0;
+    }
+    XTalkCoupling_Ring_1Chip_average = 0;
+    
 }
 
 void makePlots::init_rootBranch() {
@@ -1772,6 +1788,14 @@ void makePlots::toa_plot(){
     multig_InjCh_toaR->SetTitle(title);
     multig_InjCh_toaR->SetName(title);
     multig_InjCh_toaR->Write();
+}
+
+
+void makePlots::output_xtalkCoupling() {
+    ofstream f;
+    sprintf(title,"xtalkCoupling_%s.txt",moduleNumber.c_str());
+    f.open(title);
+    f << injChip << " " << injCh << " " << XTalkCoupling_Ring_1Chip_average << endl;
 }
 
 

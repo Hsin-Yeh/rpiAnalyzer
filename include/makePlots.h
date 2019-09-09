@@ -101,7 +101,8 @@ private:
     // fit function
     void    fit_pedestalHisto();
 
-	
+    // output function
+    void    output_xtalkCoupling();
 
 
     //private parameter
@@ -163,6 +164,7 @@ private:
     vector<int> noisyChannel;
 
     //analysis parameter
+    double XTalkCoupling_Ring_1Chip_average;
     double *XTalkCoupling_Average;    
     double *dac_ctrl;                 
     double *hg_NoisyChannel;          
