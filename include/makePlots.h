@@ -103,7 +103,8 @@ private:
 
     // output function
     void    output_xtalkCoupling();
-
+    void    output_xtalkCoupling_all(bool start , bool end, int channel);
+	
 
     //private parameter
     TApplication   *app;

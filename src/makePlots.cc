@@ -1622,10 +1622,16 @@ void makePlots::injectionPlots_allCh() {
 
     // Collect hglgtot plots for all channels ( even they are not the injected channel )
     cdallCh->cd();
-    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+    
+    output_xtalkCoupling_all(true , false, 0);
+    for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
+	
 	int ichip = ichannel / 64;
-	if ()
-	int inj_channel = (ichip*64) + injCh;
+	int inj_channel;
+	if (oneChannelInjection_flag)
+	    inj_channel = injChip*64 + injCh;
+	else
+	    inj_channel = (ichip*64) + injCh;
 	
 	TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[ichannel] );
 	sprintf(title,"hg");
@@ -1661,9 +1667,19 @@ void makePlots::injectionPlots_allCh() {
 	sprintf(title,"xtalk_Ch%d", ichannel);
 	gXTalkCoupling->SetTitle(title);
 	gXTalkCoupling->SetName(title);
-	iring = ringPositionFinder( inj_channel, ichannel );
+	
+	int iring = ringPositionFinder( inj_channel, ichannel );
+	if (iring ==  1) {
+	    TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
+	    gXTalkCoupling->Fit("f1","R");
+	    fit_intersept = f1->GetParameter(0);
+	    fit_slope = f1->GetParameter(1);
+	    output_xtalkCoupling_all(false , false, ichannel);
+	}
+	
 	gXTalkCoupling->Write();
     }
+    output_xtalkCoupling_all(false , true, 0);
 
 }
 
@@ -1831,6 +1847,21 @@ void makePlots::output_xtalkCoupling() {
     cout << "write " << title << endl;
     cout << XTalkCoupling_Ring_1Chip_average << endl;
     f << injChip << " " << injCh << " " << CHmap[injChip*32 + injCh/2].first << " " << CHmap[injChip*32 + injCh/2].second << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
+}
+
+void makePlots::output_xtalkCoupling_all(bool start, bool end, int channel) {
+    ofstream f;
+    sprintf(title,"xtalkCoupling_%s_all.txt",moduleNumber.c_str());
+    f.open(title, ios::out | ios::app );
+    cout << "write " << title << endl;
+    cout << XTalkCoupling_Ring_1Chip_average << endl;
+
+    if (start) 
+	f << injChip << " " << injCh << " " << CHmap[injChip*32 + injCh/2].first << " " << CHmap[injChip*32 + injCh/2].second << endl;
+    else if (end)
+	f << "===" << endl << endl;
+    else
+	f << channel/64 << " " << channel%64 << " " << CHmap[channel/2].first << " " << CHmap[channel/2].second << " " << XTalkCoupling_Average[channel] << " " << fit_intersept << " " << fit_slope << endl;
 }
 
 
