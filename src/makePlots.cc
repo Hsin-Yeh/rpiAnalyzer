@@ -36,6 +36,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
     cout << "----------Init start----------" << endl;
     // read init files and initialize
     readmap();
+    readSensor2Hexaboard();
     yamlReader();
     GainFactorReader( gainfile );
     noisyChannelReader( noisyfile );
@@ -894,6 +895,28 @@ void makePlots::readmap(){
     //Since there is no such pad, assign a unreasonable value
     CHmap[2*32+60/2] = make_pair(1000.,1000.);
 
+}
+
+///
+/// ==================== sensor2hexaboard ==================== ///
+///
+void makePlots::readSensor2Hexaboard(){
+    ifstream file("sensor2hexaboard.txt");
+
+    if ( !file.is_open() ) { cout << "missing sensor2hexaboard.txt" << endl; }
+    
+    while(!file.eof()){
+	int icell, channel;
+	file >> icell >> channel;
+	sensor2hexaboard[channel/2] = icell;
+    }
+
+#ifdef DEBUG
+    cout << ch << " " << cell << endl;
+    for(int channel = 0; channel < NCHANNEL; channel+=2){
+	cout << channel << " " << sensor2hexaboard[channel/2] << endl;
+    }
+#endif
 }
 
 ///
@@ -1846,7 +1869,7 @@ void makePlots::output_xtalkCoupling() {
     f.open(title, ios::out | ios::app );
     cout << "write " << title << endl;
     cout << XTalkCoupling_Ring_1Chip_average << endl;
-    f << injChip << " " << injCh << " " << CHmap[injChip*32 + injCh/2].first << " " << CHmap[injChip*32 + injCh/2].second << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
+    f << injChip << " " << injCh << " " << sensor2hexaboard[injChip*32 + injCh/2] << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
 }
 
 void makePlots::output_xtalkCoupling_all(bool start, bool end, int channel) {
@@ -1857,11 +1880,11 @@ void makePlots::output_xtalkCoupling_all(bool start, bool end, int channel) {
     cout << XTalkCoupling_Ring_1Chip_average << endl;
 
     if (start) 
-	f << injChip << " " << injCh << " " << CHmap[injChip*32 + injCh/2].first << " " << CHmap[injChip*32 + injCh/2].second << endl;
+	f << injChip << " " << injCh << " " << sensor2hexaboard[injChip*32 + injCh/2] << endl;
     else if (end)
 	f << "===" << endl << endl;
     else
-	f << channel/64 << " " << channel%64 << " " << CHmap[channel/2].first << " " << CHmap[channel/2].second << " " << XTalkCoupling_Average[channel] << " " << fit_intersept << " " << fit_slope << endl;
+	f << channel/64 << " " << channel%64 << " " << sensor2hexaboard[channel/2] << " " << XTalkCoupling_Average[channel] << " " << fit_intersept << " " << fit_slope << endl;
 }
 
 
@@ -1887,4 +1910,5 @@ void makePlots::deallocate() {
     delete hg_NoisyChannel;
 
 }
+
 

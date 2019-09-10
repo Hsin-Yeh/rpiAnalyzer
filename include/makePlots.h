@@ -79,6 +79,7 @@ private:
     void    noisyChannelReader( string noisyFileName );
     void    read_P_and_N(string ped_file);
     void    readmap();
+    void    readSensor2Hexaboard();
 
     // init functions
     void    init_outputFile();
@@ -275,6 +276,9 @@ private:
   
     // map < key = chip*32+ch/2 , pair <x, y> > 
     map<int,pair < double,double > > CHmap;
+
+    // sensor2hexaboard;
+    int sensor2hexaboard[NCHANNEL/2];
 };
 
 #endif
