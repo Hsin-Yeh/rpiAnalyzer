@@ -901,7 +901,7 @@ void makePlots::readmap(){
 /// ==================== sensor2hexaboard ==================== ///
 ///
 void makePlots::readSensor2Hexaboard(){
-    ifstream file("sensor2hexaboard.txt");
+    ifstream file("src_txtfile/sensor2hexaboard.txt");
 
     if ( !file.is_open() ) { cout << "missing sensor2hexaboard.txt" << endl; }
     
