@@ -1718,6 +1718,9 @@ void makePlots::injectionPlots_allCh() {
     multig->GetYaxis()->SetTitle("E / EInj");
     multig->GetYaxis()->SetRangeUser(-0.01, 0.1);
     multig->Write();
+    c->Update();
+    sprintf(title,"%s/xtalk_firstRing_seperate_InjCh%d_InjChip%d.png",moduleNumber.c_str(), injCh, injChip);
+    c->SaveAs(title);
     output_xtalkCoupling_all(false , true, 0);
 
 }
@@ -1771,7 +1774,7 @@ void makePlots::XTalk_poly() {
     if( !oneChannelInjection_flag )
 	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
     else 
-	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d_InjChi%d.png", plot_dir, injCh, injChip);
+	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d_InjChip%d.png", plot_dir, injCh, injChip);
     c->SaveAs(title);
     poly->Write();
 }
