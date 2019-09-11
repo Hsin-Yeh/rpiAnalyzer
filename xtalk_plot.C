@@ -11,10 +11,10 @@ void xtalk_plot(){
     double xtalk_slope[128];
     double channelID[128];
     while(!f.eof()){
-	int chip, ch;
+	int chip, ch, icell;
 	double avg, posx, posy, intersect, slope;
 	f >> chip >> ch >> posx >> posy >> avg >> intersect >> slope;
-	cout << chip << " " << ch << " " << posx << " " << posy << " " << avg << " " << intersect << " " << slope << endl;
+	cout << chip << " " << ch << " " << icell << " " << avg << " " << intersect << " " << slope << endl;
 	xtalk_avg[chip*32 + ch/2] = avg;
 	xtalk_intersect[chip*32 + ch/2]  = intersect;
 	xtalk_slope[chip*32 + ch/2]  = slope;
@@ -33,7 +33,7 @@ void xtalk_plot(){
     c->Update();
     gPad->WaitPrimitive();
     c->SaveAs("output.pdf");
-
+    
     TGraph *g_intersect = new TGraph(128, channelID, xtalk_intersect);
     g_intersect->SetMarkerStyle(22);
     g_intersect->GetXaxis()->SetTitle("channelID");
