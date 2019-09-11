@@ -1647,6 +1647,8 @@ void makePlots::injectionPlots_allCh() {
     cdallCh->cd();
     
     output_xtalkCoupling_all(true , false, 0);
+    int color = 0;
+    TMultiGraph *multig = new TMultiGraph();
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
 	
 	int ichip = ichannel / 64;
@@ -1693,15 +1695,29 @@ void makePlots::injectionPlots_allCh() {
 	
 	int iring = ringPositionFinder( inj_channel, ichannel );
 	if (iring ==  1) {
+	    gXTalkCoupling->SetMarkerColor(P.Color(color));
+	    gXTalkCoupling->SetFillColor(0);
+	    multig->Add(gXTalkCoupling);
 	    TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
 	    gXTalkCoupling->Fit("f1","R");
 	    fit_intersept = f1->GetParameter(0);
 	    fit_slope = f1->GetParameter(1);
 	    output_xtalkCoupling_all(false , false, ichannel);
-	}
+	    color++;
+	} 
 	
 	gXTalkCoupling->Write();
     }
+
+    cdinj->cd();
+    sprintf(title,"xtalk_firstRing_seperate_InjCh%d", injCh);
+    multig->SetTitle(title);
+    multig->SetName(title);
+    multig->Draw("AP");
+    multig->GetXaxis()->SetTitle("Injected Charge [DAC]");
+    multig->GetYaxis()->SetTitle("E / EInj");
+    multig->GetYaxis()->SetRangeUser(-0.01, 0.1);
+    multig->Write();
     output_xtalkCoupling_all(false , true, 0);
 
 }
@@ -1744,7 +1760,7 @@ void makePlots::XTalk_poly() {
     poly->SetTitle(title);
     poly->SetName(title);
     poly->SetMarkerSize(1);
-    poly->SetMinimum(-0.02);
+    poly->SetMinimum(-0.05);
     poly->Draw("colztext");
     latex.SetTextSize(0.05);
     latex.SetTextAlign(13);  //align at top
@@ -1756,9 +1772,8 @@ void makePlots::XTalk_poly() {
 	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
     else 
 	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d_InjChi%d.png", plot_dir, injCh, injChip);
-
     c->SaveAs(title);
-    c->Write();
+    poly->Write();
 }
 
 void makePlots::Xtalk_1D(){
