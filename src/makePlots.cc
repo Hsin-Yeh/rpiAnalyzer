@@ -1719,7 +1719,7 @@ void makePlots::injectionPlots_allCh() {
     multig->GetYaxis()->SetRangeUser(-0.01, 0.1);
     multig->Write();
     c->Update();
-    sprintf(title,"%s/xtalk_firstRing_seperate_InjCh%d_InjChip%d.png",moduleNumber.c_str(), injCh, injChip);
+    sprintf(title,"%s/xtalk_firstRing_seperate_InjCh%d_InjChip%d.png",plot_dir, injCh, injChip);
     c->SaveAs(title);
     output_xtalkCoupling_all(false , true, 0);
 
