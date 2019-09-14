@@ -1696,6 +1696,7 @@ void makePlots::injectionPlots_allCh() {
 	int iring = ringPositionFinder( inj_channel, ichannel );
 	if (iring ==  1) {
 	    gXTalkCoupling->SetMarkerColor(P.Color(color));
+	    gXTalkCoupling->SetLineColor(P.Color(color));
 	    gXTalkCoupling->SetFillColor(0);
 	    multig->Add(gXTalkCoupling);
 	    TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
@@ -1704,7 +1705,7 @@ void makePlots::injectionPlots_allCh() {
 	    fit_slope = f1->GetParameter(1);
 	    output_xtalkCoupling_all(false , false, ichannel);
 	    color++;
-	} 
+	}
 	
 	gXTalkCoupling->Write();
     }
