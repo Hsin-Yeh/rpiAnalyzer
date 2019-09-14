@@ -1,3 +1,27 @@
+void InitTH2Poly(TH2Poly& poly)
+{
+    int MAXVERTICES = 6;
+    double HexX[MAXVERTICES];
+    double HexY[MAXVERTICES];
+    int iu,iv,CellXYsize;
+    ifstream file("src_txtfile/poly_frame.txt");
+    string line;
+  
+    for(int header = 0; header < 4; ++header )     getline(file,line);
+  
+    while(true){
+	getline(file,line);
+	if( file.eof() ) break;
+	file >> iu >> iv >> CellXYsize;    
+	for(int i = 0; i < CellXYsize ; ++i){
+	    getline(file,line);
+	    file >> HexX[i] >> HexY[i];
+	}
+	poly.AddBin(CellXYsize, HexX, HexY);
+    }
+    file.close();
+}
+
 void xtalk_plot(){
     ifstream f;
     ifstream f_datainput;
@@ -33,6 +57,22 @@ void xtalk_plot(){
     c->Update();
     gPad->WaitPrimitive();
     c->SaveAs("output.pdf");
+
+    TH2Poly *poly = new TH2Poly;
+    InitTH2Poly(*poly);
+    poly->SetMinimum(-0.1);
+    for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
+	int ichip = ichannel / NCH;
+	float X, Y;
+	int forCH = ichannel / 2;
+	bool NoisyBool = false;
+	X = CHmap[forCH].first;
+	Y = CHmap[forCH].second;
+	poly->Fill(X,Y,xtalk_intersect[ichannel/2]);
+    }
+    poly->Draw("colztext");
+    c->Update();
+    gPad->WaitPrimitive();
     
     TGraph *g_intersect = new TGraph(128, channelID, xtalk_intersect);
     g_intersect->SetMarkerStyle(22);
