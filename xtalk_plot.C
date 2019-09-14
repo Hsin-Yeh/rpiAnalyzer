@@ -1,3 +1,24 @@
+map<int,pair < double,double > > CHmap;
+
+void readmap(){
+    
+    ifstream file("./src_txtfile/CH_map.txt");
+    string line;
+    int ichip,ich,itype,iformatCH;
+    double iposx, iposy;
+    while(true){
+	getline(file,line);
+	if( file.eof() ) break;
+	file >> ichip >> ich >> iposx >> iposy >> itype;
+	iformatCH = ichip*32 + ich/2;
+	CHmap[iformatCH] = make_pair(iposx,iposy);}
+    file.close();
+    //Since there is no such pad, assign a unreasonable value
+    CHmap[2*32+60/2] = make_pair(1000.,1000.);
+
+}
+
+
 void InitTH2Poly(TH2Poly& poly)
 {
     int MAXVERTICES = 6;
@@ -61,8 +82,8 @@ void xtalk_plot(){
     TH2Poly *poly = new TH2Poly;
     InitTH2Poly(*poly);
     poly->SetMinimum(-0.1);
-    for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-	int ichip = ichannel / NCH;
+    for(int ichannel = 0; ichannel < 256; ichannel+=2){
+	int ichip = ichannel / 64;
 	float X, Y;
 	int forCH = ichannel / 2;
 	bool NoisyBool = false;
