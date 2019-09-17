@@ -85,7 +85,7 @@ void xtalk_plot(){
     g_avg->SetMarkerStyle(22);
     g_avg->GetXaxis()->SetTitle("channelID");
     g_avg->GetYaxis()->SetTitle(" < EFirstRing / EInj > ");
-    g_avg->SetTitle("charge injection xtalk");
+    g_avg->SetTitle("xtalkCoupling_firstring");
     g_avg->Draw("AP");
     c->Update();
     //gPad->WaitPrimitive();
@@ -104,6 +104,8 @@ void xtalk_plot(){
 	cout << X << " " << Y << " " << xtalk_intersect[ichannel/2] << endl;
 	poly->Fill(X,Y,xtalk_intersect[ichannel/2]);
     }
+    gStyle->SetPaintTextFormat("2.3f");
+    poly->SetTitle("xtalkCoupling_firstring");
     poly->Draw("colztext");
     c->Update();
     c->SaveAs("poly.pdf");
