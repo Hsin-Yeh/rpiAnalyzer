@@ -1549,8 +1549,6 @@ void makePlots::fit_const_inj_Histo() {
 	     << endl;
 	//<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
 #endif
-	cout << 
-		
       
     }
 }
