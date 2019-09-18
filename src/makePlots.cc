@@ -1043,7 +1043,6 @@ void makePlots::readSensor2Hexaboard(){
     }
 
 #ifdef DEBUG
-    cout << ch << " " << cell << endl;
     for(int channel = 0; channel < NCHANNEL; channel+=2){
 	cout << channel << " " << sensor2hexaboard[channel/2] << endl;
     }
