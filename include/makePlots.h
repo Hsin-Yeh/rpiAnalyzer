@@ -64,7 +64,8 @@ public:
 private:
 
     // private function
-    double  mipConverter( double hg_SubPed, double lg_SubPed, double tot , int channel);
+    double  mipConverter( double hg_SubPed, double lg_SubPed, double tot , int channel );
+    bool    totFireCheck(int eventID);
     int     ringPositionFinder( int inj_channel, int channel);
     double  CMCalculator( double **sig_SubPed, int *TS );
     double* CMCalculator_v2(double **sig_SubPed, int chip );
@@ -124,6 +125,7 @@ private:
     int            Nevents;
     char           plot_dir[100];
     TLatex         latex;
+    int            goodEventCount;
 
     // TDirectories
     TDirectory *cdinjCh;
@@ -185,7 +187,8 @@ private:
     double **toaf_allCh;
     double **toar_allCh;
     double **toaf_r_allCh;
-    double **mip_allCh;      
+    double **mip_allCh;
+    double **mip_allCh_goodEvent;
     double **XTalkCoupling;  
     double **hgFitMean;      
     double **hgFitSigma;

@@ -170,7 +170,7 @@ void makePlots::sweepPlotter(){
   
     /// --------------- Start Loop of sweepPlotter --------------- ///
     for(int entry = 0; entry < TotalEntries ; ++entry) {
-    
+
 	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
 	Chain1 -> GetEntry(entry);
 	Chain2 -> GetEntry(entry);
@@ -225,29 +225,34 @@ void makePlots::sweepPlotter(){
 	    }
 	}
 
-    
 	/// Injection & Cross Talk Analysis
 	for(int ich = 0; ich < NCH; ich++){
+	    bool injch_flag = false;
 	    int channel      = ich + chip*64;
 	    double hg = hg_sig[ich][MaxTS_sca];
 	    double lg = lg_sig[ich][MaxTS_sca];
 	    double tot = tot_slow[ich];
-			
+	    int inj_channel;
+	    
 	    hg_allCh[channel][event]  = hg;
 	    lg_allCh[channel][event]  = lg;
 	    tot_allCh[channel][event] = tot;
 	    toaf_allCh[channel][event] = toa_fall[ich];
 	    toar_allCh[channel][event] = toa_rise[ich];
 	    toaf_r_allCh[channel][event] = toa_fall[ich] - toa_rise[ich];
+	    
 	    /// mip conversion
-	    double energy_mip = mipConverter( hg, lg, tot, channel);
+	    double energy_mip = mipConverter( hg, lg, tot, channel );
 	    mip_allCh[channel][event] = energy_mip;
 	}
 
 	/// Injection XTalk calculation
 	if ( chip == 3 ) {
+	    if ( totFireCheck(event) == false ) continue;
+	    
+	    goodEventCount++;
+	    
 	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-
 		int ichip = ichannel / NCH;
 		int inj_channel;
 		if ( oneChannelInjection_flag )
@@ -255,38 +260,40 @@ void makePlots::sweepPlotter(){
 		else
 		    inj_channel = ( ichip * NCH ) + injCh;
 
-		XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
+		mip_allCh_goodEvent[ichannel][goodEventCount] = mip_allCh[ichannel][event];
+		XTalkCoupling[ichannel][goodEventCount] = mip_allCh[ichannel][goodEventCount] / mip_allCh[inj_channel][goodEventCount];
 
 #ifdef DEBUG 
-		cout << "event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
+		cout << "goodEventCount = " << goodEventCount << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][goodEventCount] << " Xtalk = " << XTalkCoupling[ichannel][goodEventCount] << endl;
 #endif
 	
-		if( event>200 && event<=700 ){
-		    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][event];
+		if( goodEventCount>200 && goodEventCount<=700 ){
+		    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][goodEventCount];
 		    AverageEvents++;
 		}
-		/// Calulate event ring Energy
+		/// Calulate goodEventCount ring Energy
 		int iring;
 		iring = ringPositionFinder( inj_channel, ichannel );
 		if( iring > -1 ) {
 		    
 		    if ( oneChannelInjection_flag ) {
-			mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
-			if ( iring == 1 && event == 1 ) 
+			mip_Ring_1Chip[iring][goodEventCount] += mip_allCh[ichannel][goodEventCount];
+			if ( iring == 1 && goodEventCount == 1 ) 
 			    ringChannelCount++;
 		    }
 		    else
-			mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
+			mip_Ring_4Chip[iring][ichip][goodEventCount] += mip_allCh[ichannel][goodEventCount];
 		}
 	    }
 
+	    
 	    /// Calculate XTalkCoupling 
 	    if ( oneChannelInjection_flag ) {
 		for(int iring = 1; iring < NRings; iring++) {
-		    XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / mip_Ring_1Chip[0][goodEventCount];
 		}
 		if( event>200 && event<=700 ) {
-		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][event];
+		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][goodEventCount];
 #ifdef DEBUG
 		    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
 #endif
@@ -296,7 +303,7 @@ void makePlots::sweepPlotter(){
 	    else {
 		for(int ichip = 0; ichip < NCHIP; ichip++){
 		    for(int iring = 1; iring < NRings; iring++) {
-			XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
+			XTalkCoupling_Ring_4Chip[iring][ichip][goodEventCount] = mip_Ring_4Chip[iring][ichip][goodEventCount] / mip_Ring_4Chip[0][ichip][goodEventCount];
 		    }
 		}
 	    }
@@ -615,7 +622,7 @@ void makePlots::Pulse_display( int displayChannel, int pulseDisplay_type, int lo
 ///
 /// ==================== mipConverter ==================== ///
 ///
-double makePlots::mipConverter( double hg_SubPed, double lg_SubPed, double tot , int channel){
+double makePlots::mipConverter( double hg_SubPed, double lg_SubPed, double tot , int channel ){
   
     double mip;
     int ichip = channel / NCH;
@@ -636,6 +643,29 @@ double makePlots::mipConverter( double hg_SubPed, double lg_SubPed, double tot ,
     return mip;
     
 }
+
+
+bool makePlots::totFireCheck(int eventID){
+
+    bool totFire_flag = true;
+    if ( !oneChannelInjection_flag ) {
+	for ( int ichip = 0; ichip < NCHIP; ichip++ ){
+	    int inj_channel = ichip*NCH + injCh;
+	    if ( lg_allCh[inj_channel][eventID] > LGTP[ichip][injCh] && tot_allCh[inj_channel][eventID] <= 4 ) {
+		totFire_flag = false;
+	    }
+	}
+    }
+    else {
+	int inj_channel = injChip*NCH + injCh;
+	if ( lg_allCh[inj_channel][eventID] > LGTP[injChip][injCh] && tot_allCh[inj_channel][eventID] <= 4 ) {
+	    totFire_flag = false;
+	}
+    }
+
+    return totFire_flag;
+}
+
 
 ///
 /// ==================== ringPositionFinder ==================== ///
@@ -1308,6 +1338,7 @@ void makePlots::init_analysisParameter() {
     toar_allCh      = new double*[NCHANNEL];
     toaf_r_allCh    = new double*[NCHANNEL];
     mip_allCh       = new double*[NCHANNEL];
+    mip_allCh_goodEvent       = new double*[NCHANNEL];
     XTalkCoupling   = new double*[NCHANNEL];
     hgFitMean       = new double*[NCHANNEL];
     hgFitSigma      = new double*[NCHANNEL];
@@ -1327,6 +1358,7 @@ void makePlots::init_analysisParameter() {
 	toar_allCh[i]      = new double[Nevents];
 	toaf_r_allCh[i]    = new double[Nevents];
 	mip_allCh[i]       = new double[Nevents];
+	mip_allCh_goodEvent[i]       = new double[Nevents];
 	XTalkCoupling[i]   = new double[Nevents];
 	hgFitMean[i]       = new double[NSCA];
 	hgFitSigma[i]      = new double[NSCA];
@@ -1381,6 +1413,7 @@ void makePlots::init_analysisParameter() {
     }
     XTalkCoupling_Ring_1Chip_average = 0;
     ringChannelCount = 0;
+    goodEventCount = 0;
 
     cout << "Finish initializing parameters" << endl;
     
@@ -1475,10 +1508,9 @@ void makePlots::init_rootDir() {
 	    sprintf(title,"InjCh%d_InjChip%d",injCh, injChip);
 
 	cdinjCh = outfile->mkdir(title);
-	cdallCh = cdinjCh->mkdir("allCh_hglgtot");
-	cdinj = cdinjCh->mkdir("injection_analysis_plots");
     }
-
+    cdallCh = cdinjCh->mkdir("allCh_hglgtot");
+    cdinj = cdinjCh->mkdir("injection_analysis_plots");
     cdPedestal_histo = cdinjCh->mkdir("Pedestal_histo");
     cdtot = cdPedestal_histo->mkdir("tot_toa_histo");
     cdmip = cdPedestal_histo->mkdir("mip_histo");
@@ -1725,7 +1757,7 @@ void makePlots::injectionPlots(){
 
 	/// Xtalk vs dac_ctrl
 	for(int iring = 1; iring < 2; iring++){
-	    TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
+	    TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
 	    sprintf(title,"chip%d", ichip);
 	    gXTalkCoupling->SetTitle(title);
 	    gXTalkCoupling->SetName(title);
@@ -1799,7 +1831,7 @@ void makePlots::oneChannelInjection_injectionPlots(){
 
     TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
     for(int iring = 1; iring < 2; iring++){
-	TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
+	TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
 	sprintf(title,"ring %d", iring);
 	gXTalkCoupling->SetTitle(title);
 	gXTalkCoupling->SetName(title);
@@ -1914,7 +1946,7 @@ void makePlots::injectionPlots_allCh() {
 	multig_InjCh_hltot->SetName(title);
 	multig_InjCh_hltot->Write();
 
-	TGraph* gXTalkCoupling = new TGraph(Nevents, mip_allCh[inj_channel], XTalkCoupling[ichannel] );
+	TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling[ichannel] );
 	sprintf(title,"xtalk_Ch%d", ichannel);
 	gXTalkCoupling->SetTitle(title);
 	gXTalkCoupling->SetName(title);
