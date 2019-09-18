@@ -1837,7 +1837,7 @@ void makePlots::const_injPlots() {
 	bool NoisyBool = false;
 	X = CHmap[forCH].first;
 	Y = CHmap[forCH].second;
-	if(ichannel%64 == injCh)
+	if(ichannel == injCh + injChip*64 )
 	    poly->Fill(X,Y,-2); 
 	else 
 	    poly->Fill(X,Y,xtalkCouplingFitMean[ichannel]);
