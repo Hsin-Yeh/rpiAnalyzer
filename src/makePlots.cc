@@ -1521,7 +1521,7 @@ void makePlots::init_histo() {
     }
     cdinj->cd();
     sprintf(h_title,"h_xtalkCoupling_injCh%d", injCh);
-    h_xtalkCoupling_Ring_1chip  = new TH1D(h_title,h_title,200,-1,1.01);
+    h_xtalkCoupling_Ring_1chip  = new TH1D(h_title,h_title,201,-1.,1.01);
 
     cout << "Finiish initializing histograms" << endl;
 }
