@@ -421,14 +421,14 @@ void makePlots::const_injPlotter() {
 		    inj_channel = ( ichip * NCH ) + injCh;
 
 		XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
+		h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
+		
 
 #ifdef DEBUG 
 		cout << "event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
 #endif
 	
-		if( event>200 && event<=700 ){
-		    h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
-		}
+		
 		/// Calulate event ring Energy
 		int iring;
 		iring = ringPositionFinder( inj_channel, ichannel );
@@ -466,7 +466,7 @@ void makePlots::const_injPlotter() {
     /// --------------- End Loop of const_injPlotter --------------- ///
 
     /// Fit
-    fit_const_inj_Histo();
+    //fit_const_inj_Histo();
     
     ///
     /// Plots!!!!!
@@ -1542,13 +1542,15 @@ void makePlots::fit_const_inj_Histo() {
 	xtalkCouplingFitChisquare[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetChisquare();
 
 #ifdef DEBUG
-	    //if ( hgFitMean[ichannel][sca] > 200 ) 
-		cout << " ichannel " << ichannel
-		     << " Mean " << mipFitMean[ichannel] << " Sigma " << mipFitSigma[ichannel] << " Chi " << mipFitChisquare[ichannel]
-		     << " Mean " << xtalkCouplingFitMean[ichannel] << " Sigma " << xtalkCouplingFitSigma[ichannel] << " Chi " << xtalkCouplingFitChisquare[ichannel]
-		     << endl;
-		    //<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
+	//if ( hgFitMean[ichannel][sca] > 200 ) 
+	cout << " ichannel " << ichannel
+	     << " Mean " << mipFitMean[ichannel] << " Sigma " << mipFitSigma[ichannel] << " Chi " << mipFitChisquare[ichannel]
+	     << " Mean " << xtalkCouplingFitMean[ichannel] << " Sigma " << xtalkCouplingFitSigma[ichannel] << " Chi " << xtalkCouplingFitChisquare[ichannel]
+	     << endl;
+	//<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
 #endif
+	cout << 
+		
       
     }
 }
