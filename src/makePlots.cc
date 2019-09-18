@@ -10,7 +10,7 @@
 #include "TSystem.h"
 #include "TImage.h"
 
-//#define DEBUG
+#define DEBUG
 
 //Constructor
 makePlots::makePlots(TChain* chain1, TChain* chain2):Chain1(chain1),Chain2(chain2)
@@ -1378,6 +1378,8 @@ void makePlots::init_analysisParameter() {
     }
     XTalkCoupling_Ring_1Chip_average = 0;
     ringChannelCount = 0;
+
+    cout << "Finisit initializing parameters" << endl;
     
 }
 
@@ -1451,6 +1453,7 @@ void makePlots::init_rootBranch() {
 
     TotalEntries = Chain1->GetEntries();
     Nevents = TotalEntries/NCHIP;
+    cout << "Finisth initializing root branches" << endl;
     cout << "Total Events = " << Nevents << endl;
     
 }
@@ -1484,6 +1487,8 @@ void makePlots::init_rootDir() {
     cdlgNoise = cdPedestal_poly->mkdir("lgNoise");
     cdhgChi = cdPedestal_poly->mkdir("hgChisquare");
     cdlgChi = cdPedestal_poly->mkdir("lgChisquare");
+
+    cout << "Finish initializing root directories" << endl;
     
 }
 
@@ -1517,6 +1522,8 @@ void makePlots::init_histo() {
     cdinj->cd();
     sprintf(h_title,"h_xtalkCoupling_injCh%d", injCh);
     h_xtalkCoupling_Ring_1chip  = new TH1D(h_title,h_title,200,-1,1);
+
+    cout << "Finiish initializing histograms" << endl;
 }
 
 
