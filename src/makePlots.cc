@@ -1514,7 +1514,7 @@ void makePlots::init_histo() {
 	h_toaf_r[ichannel] = new TH1D(h_title,h_title,200,700,1200);
 	cdmip->cd();
 	sprintf(h_title,"h_mip_Ch%d", ichannel);
-	h_mip[ichannel] = new TH1D(h_title,h_title,150,0,3000);
+	h_mip[ichannel] = new TH1D(h_title,h_title,150,0,300);
 	sprintf(h_title,"h_xtalkCoupling_Ch%d", ichannel);
 	h_xtalkCoupling[ichannel] = new TH1D(h_title,h_title,200,-1,1);
     }
