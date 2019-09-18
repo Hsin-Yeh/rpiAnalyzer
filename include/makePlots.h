@@ -41,6 +41,7 @@ public:
     void Init( string pedfile, string gainfile, string noisyfile );
     void pedestalPlotter();
     void sweepPlotter();
+    void const_injPlotter();
     void cosmicAnalyzer();
     void Pulse_display( int displayChannel = -1 , int acq_type = 0, int lowerR = -1, int upperR = -1 , int startEv = 0 );
   
@@ -98,9 +99,11 @@ private:
     void    XTalk_poly();
     void    Xtalk_1D();
     void    toa_plot();
+    void    const_injPlots();
 
     // fit function
     void    fit_pedestalHisto();
+    void    fit_const_inj_Histo();
 
     // output function
     void    output_xtalkCoupling();
@@ -128,6 +131,7 @@ private:
     TDirectory *cdinj;
     TDirectory *cdPedestal_histo;
     TDirectory *cdtot;
+    TDirectory *cdmip;
     TDirectory *cdhglgPedestal;
     TDirectory *cdPedestal_poly;
     TDirectory *cdhgPedestal;
@@ -141,10 +145,12 @@ private:
     TH1D *h_hgPedestal[NSCA][NCHANNEL];
     TH1D *h_lgPedestal[NSCA][NCHANNEL];
     TH1D *h_tot[NCHANNEL];
+    TH1D *h_mip[NCHANNEL];
+    TH1D *h_xtalkCoupling[NCHANNEL];
     TH1D *h_toarise[NCHANNEL];
     TH1D *h_toafall[NCHANNEL];
     TH1D *h_toaf_r[NCHANNEL];
-
+    TH1D *h_xtalkCoupling_Ring_1chip;
     
     //pedestal parameter
     float          avg_HG[NCHIP][NCH][NSCA];
@@ -182,11 +188,17 @@ private:
     double **mip_allCh;      
     double **XTalkCoupling;  
     double **hgFitMean;      
-    double **lgFitMean;      
-    double **hgFitSigma;     
-    double **lgFitSigma;
+    double **hgFitSigma;
     double **hgFitChisquare;
-    double **lgFitChisquare;     
+    double **lgFitMean;
+    double **lgFitSigma;
+    double **lgFitChisquare;
+    double *mipFitMean;    
+    double *mipFitSigma;
+    double *mipFitChisquare;
+    double *xtalkCouplingFitMean;    
+    double *xtalkCouplingFitSigma;
+    double *xtalkCouplingFitChisquare;     
     float **hgMean;
     float **lgMean;
     float **hgSigma;

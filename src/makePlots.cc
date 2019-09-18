@@ -347,10 +347,141 @@ void makePlots::sweepPlotter(){
 ///
 /// ==================== const_injPlotter ==================== ///
 ///
-//void makePlots::const_injPlotter() {
+void makePlots::const_injPlotter() {
+
+        /// Define Parameters 
+    int MaxTS = 2; //choose this time sample to be the peak
+    int AverageEvents = 0;
+
+  
+    /// --------------- Start Loop of const_injPlotter --------------- ///
+    for(int entry = 0; entry < TotalEntries ; ++entry) {
+    
+	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
+	Chain1 -> GetEntry(entry);
+	Chain2 -> GetEntry(entry);
+	dac_ctrl[event] = dacinj;
+
+	// Timesample 
+	int TS[NSCA];
+	int TS0_sca, MaxTS_sca;
+	for(int sca = 0 ; sca < NSCA ; sca++) {
+	    TS[sca] = timesamp[sca];
+	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
+	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
+	}
+
+	/// Passing hg, lg to self define array
+	for (int ich = 0; ich < NCH; ich++){
+	    for (int sca = 0; sca < NSCA; sca++){
+		hg_sig[ich][sca] = hg[sca][ich];
+		lg_sig[ich][sca] = lg[sca][ich];
+	    }
+	}
+	
+	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+
+
+#ifdef DEBUG
+	cout << "event: " << event << endl;
+	for (int ich = 0; ich < NCH; ich++){
+	    cout << "chip: " << chip << " ch: " << ich << " == ";
+	    for (int sca = 0; sca < NSCA; sca++){
+		cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
+	    }
+	    cout << endl;
+	}
+	for (int ich = 0; ich < NCH; ich++){
+	    cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
+		 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
+	}
+#endif
+
+	/// Injection & Cross Talk Analysis
+	for(int ich = 0; ich < NCH; ich++){
+	    int channel      = ich + chip*64;
+	    double hg = hg_sig[ich][MaxTS_sca];
+	    double lg = lg_sig[ich][MaxTS_sca];
+	    double tot = tot_slow[ich];
+	    /// mip conversion
+	    double energy_mip = mipConverter( hg, lg, tot, channel);
+	    mip_allCh[channel][event] = energy_mip;
+	    h_mip[ich+chip*64]->Fill(energy_mip);
+	}
+
+	/// Injection XTalk calculation
+	if ( chip == 3 ) {
+	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+
+		int ichip = ichannel / NCH;
+		int inj_channel;
+		if ( oneChannelInjection_flag )
+		    inj_channel = ( injChip * NCH ) + injCh;
+		else
+		    inj_channel = ( ichip * NCH ) + injCh;
+
+		XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
+
+#ifdef DEBUG 
+		cout << "event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
+#endif
+	
+		if( event>200 && event<=700 ){
+		    h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
+		}
+		/// Calulate event ring Energy
+		int iring;
+		iring = ringPositionFinder( inj_channel, ichannel );
+		if( iring > -1 ) {
+		    
+		    if ( oneChannelInjection_flag ) 
+			mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
+		    else
+			mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
+		}
+	    }
+
+	    /// Calculate XTalkCoupling 
+	    if ( oneChannelInjection_flag ) {
+		for(int iring = 1; iring < NRings; iring++) {
+		    XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+		}
+		if( event>200 && event<=700 ) {
+		    h_xtalkCoupling_Ring_1chip->Fill( XTalkCoupling_Ring_1Chip[1][event] );
+#ifdef DEBUG
+		    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
+#endif
+		}
+
+	    }
+	    else {
+		for(int ichip = 0; ichip < NCHIP; ichip++){
+		    for(int iring = 1; iring < NRings; iring++) {
+			XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
+		    }
+		}
+	    }
+	}
+    }
+    /// --------------- End Loop of const_injPlotter --------------- ///
+
+    /// Fit
+    fit_const_inj_Histo();
+    
+    ///
+    /// Plots!!!!!
+    ///
     
     
-//}
+    ///
+    /// Output 
+    ///
+    output_xtalkCoupling();
+    
+    outfile->Write();
+    outfile->Close();
+    
+}
 
 
 ///
@@ -1161,6 +1292,12 @@ void makePlots::init_analysisParameter() {
     XTalkCoupling_Average    = new double[NCHANNEL];
     dac_ctrl                 = new double[Nevents];
     hg_NoisyChannel          = new double[Nevents];
+    mipFitMean       = new double[NCHANNEL];
+    mipFitSigma      = new double[NCHANNEL];
+    mipFitChisquare  = new double[NCHANNEL];
+    xtalkCouplingFitMean       = new double[NCHANNEL];
+    xtalkCouplingFitSigma      = new double[NCHANNEL];
+    xtalkCouplingFitChisquare  = new double[NCHANNEL];
     hg_allCh        = new double*[NCHANNEL];
     lg_allCh        = new double*[NCHANNEL];
     tot_allCh       = new double*[NCHANNEL];
@@ -1170,10 +1307,10 @@ void makePlots::init_analysisParameter() {
     mip_allCh       = new double*[NCHANNEL];
     XTalkCoupling   = new double*[NCHANNEL];
     hgFitMean       = new double*[NCHANNEL];
-    lgFitMean       = new double*[NCHANNEL];
     hgFitSigma      = new double*[NCHANNEL];
-    lgFitSigma      = new double*[NCHANNEL];
     hgFitChisquare  = new double*[NCHANNEL];
+    lgFitMean       = new double*[NCHANNEL];
+    lgFitSigma      = new double*[NCHANNEL];
     lgFitChisquare  = new double*[NCHANNEL];
     hgMean          = new float*[NCHANNEL];
     lgMean          = new float*[NCHANNEL];
@@ -1189,10 +1326,10 @@ void makePlots::init_analysisParameter() {
 	mip_allCh[i]       = new double[Nevents];
 	XTalkCoupling[i]   = new double[Nevents];
 	hgFitMean[i]       = new double[NSCA];
-	lgFitMean[i]       = new double[NSCA];
 	hgFitSigma[i]      = new double[NSCA];
-	lgFitSigma[i]      = new double[NSCA];
 	hgFitChisquare[i]  = new double[NSCA];
+	lgFitMean[i]       = new double[NSCA];
+	lgFitSigma[i]      = new double[NSCA];
 	lgFitChisquare[i]  = new double[NSCA];
 	hgMean[i]          = new float[NSCA];
 	lgMean[i]          = new float[NSCA];
@@ -1338,6 +1475,7 @@ void makePlots::init_rootDir() {
 
     cdPedestal_histo = cdinjCh->mkdir("Pedestal_histo");
     cdtot = cdPedestal_histo->mkdir("tot_toa_histo");
+    cdmip = cdPedestal_histo->mkdir("mip_histo");
     cdhglgPedestal = cdPedestal_histo->mkdir("hglg_histo");
     cdPedestal_poly = cdinjCh->mkdir("Pedestal_poly");
     cdhgPedestal = cdPedestal_poly->mkdir("hgPedestal");
@@ -1352,8 +1490,8 @@ void makePlots::init_rootDir() {
 void makePlots::init_histo() {
     
     /// Initialize Histograms
+    char h_title[50];
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
-	char h_title[50];
 	for(int sca = 0; sca < NSCA; ++sca) {
 	    cdhglgPedestal->cd();
 	    sprintf(h_title,"h_hgPedestal_Ch%d_SCA%d", ichannel, sca);
@@ -1370,9 +1508,44 @@ void makePlots::init_histo() {
 	h_toafall[ichannel] = new TH1D(h_title,h_title,150,0,3000);
 	sprintf(h_title,"h_toaf_r_Ch%d", ichannel);
 	h_toaf_r[ichannel] = new TH1D(h_title,h_title,200,700,1200);
+	cdmip->cd();
+	sprintf(h_title,"h_mip_Ch%d", ichannel);
+	h_mip[ichannel] = new TH1D(h_title,h_title,150,0,3000);
+	sprintf(h_title,"h_xtalkCoupling_Ch%d", ichannel);
+	h_xtalkCoupling[ichannel] = new TH1D(h_title,h_title,200,-1,1);
     }
+    cdinj->cd();
+    sprintf(h_title,"h_xtalkCoupling_injCh%d", injCh);
+    h_xtalkCoupling_Ring_1chip  = new TH1D(h_title,h_title,200,-1,1);
 }
 
+
+void makePlots::fit_const_inj_Histo() {
+    
+    /// Fit 
+    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+	
+	h_mip[ichannel]->Fit("gaus","Q");
+	mipFitMean [ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(1);
+	mipFitSigma[ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(2);
+	mipFitChisquare[ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetChisquare();
+
+	h_xtalkCoupling[ichannel]->Fit("gaus","Q");
+	xtalkCouplingFitMean [ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetParameter(1);
+	xtalkCouplingFitSigma[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetParameter(2);
+	xtalkCouplingFitChisquare[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetChisquare();
+
+#ifdef DEBUG
+	    //if ( hgFitMean[ichannel][sca] > 200 ) 
+		cout << " ichannel " << ichannel << " sca " << sca
+		     << " Mean " << mipFitMean[ichannel] << " Sigma " << mipFitSigma[ichannel] << " Chi " << mipFitChisquare[ichannel]
+		     << " Mean " << xtalkCouplingFitMean[ichannel] << " Sigma " << xtalkCouplingFitSigma[ichannel] << " Chi " << xtalkCouplingFitChisquare[ichannel]
+		     << endl;
+		    //<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
+#endif
+      
+    }
+}
 
 void makePlots::fit_pedestalHisto() {
     
@@ -1405,6 +1578,7 @@ void makePlots::fit_pedestalHisto() {
     }
     
 }
+
 
 
 void makePlots::Pedestal_poly() {
@@ -1636,6 +1810,48 @@ void makePlots::oneChannelInjection_injectionPlots(){
     multig_XTalkCoupling_ring->Write();
     
 }
+
+void makePlots::const_injPlots() {
+
+    /// 2D Average Xtalk 
+    int NNoisy = 8;
+    int NoisyChannel[8] = {248,186,214,120,126,42,254,190};
+
+    TH2Poly *poly = new TH2Poly;
+    InitTH2Poly(*poly);
+    poly->SetMinimum(-0.1);
+    for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
+	int ichip = ichannel / NCH;
+	float X, Y;
+	int forCH = ichannel / 2;
+	bool NoisyBool = false;
+	X = CHmap[forCH].first;
+	Y = CHmap[forCH].second;
+	if(ichannel%64 == injCh)
+	    poly->Fill(X,Y,-2); 
+	else 
+	    poly->Fill(X,Y,xtalkCouplingFitMean[ichannel]);
+    }
+    sprintf(title,"<E / EInj> InjCh%d InjChip%d", injCh, injChip);
+
+    gStyle->SetPaintTextFormat("2.3f");
+    poly->SetTitle(title);
+    poly->SetName(title);
+    poly->SetMarkerSize(1);
+    poly->SetMinimum(-0.05);
+    poly->Draw("colztext");
+    latex.SetTextSize(0.05);
+    latex.SetTextAlign(13);  //align at top
+    latex.SetTextSize(0.03);
+    latex.DrawLatex(-7,-7,"*White pads are the charge injection pads");
+    //latex.DrawLatex(-7,-7.5,"*Each pad is filled with its energy divided by the enrgy of the injection channel energy on the same chip");
+    c->Update();
+    sprintf(title,"%s/xtalkCoupling_const_inj_Poly_InjCh%d.png", plot_dir, injCh);
+    c->SaveAs(title);
+    poly->Write();
+    
+}
+
 
 
 

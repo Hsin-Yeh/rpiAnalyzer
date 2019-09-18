@@ -132,6 +132,7 @@ void main_makePlots() {
 		cout << "Processing PlotProducer " << endl << endl;
 		if ( M->acquisitionType == "standard" ) { M->pedestalPlotter(); }
 		else if ( M->acquisitionType == "sweep" ) { M->sweepPlotter(); }
+		else if ( M->acquisitionType == "const_inj" ) { M->const_injPlotter(); }
 	}
 	else if ( anaType == 1 ) {
 		cout << "Processing Pulse Displayer  " << endl << endl;
