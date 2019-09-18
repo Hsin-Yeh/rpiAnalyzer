@@ -1543,7 +1543,7 @@ void makePlots::fit_const_inj_Histo() {
 
 #ifdef DEBUG
 	    //if ( hgFitMean[ichannel][sca] > 200 ) 
-		cout << " ichannel " << ichannel << " sca " << sca
+		cout << " ichannel " << ichannel
 		     << " Mean " << mipFitMean[ichannel] << " Sigma " << mipFitSigma[ichannel] << " Chi " << mipFitChisquare[ichannel]
 		     << " Mean " << xtalkCouplingFitMean[ichannel] << " Sigma " << xtalkCouplingFitSigma[ichannel] << " Chi " << xtalkCouplingFitChisquare[ichannel]
 		     << endl;
