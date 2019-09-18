@@ -681,7 +681,7 @@ void makePlots::yamlReader(){
     end = input_fileName.find("ana_output");
     f_substr = input_fileName.substr(0,end-1);
     string yamlPath(f_substr);
-    char yamlFileName[100];
+    char yamlFileName[200];
     sprintf(yamlFileName,"%s/yaml/%s.yaml",yamlPath.c_str(), rootFileName.c_str());
   
     string searchstr;
