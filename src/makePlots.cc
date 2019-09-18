@@ -476,7 +476,7 @@ void makePlots::const_injPlotter() {
     ///
     /// Output 
     ///
-    output_xtalkCoupling();
+    //output_xtalkCoupling();
     
     outfile->Write();
     outfile->Close();
