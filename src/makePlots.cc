@@ -1378,7 +1378,7 @@ void makePlots::init_analysisParameter() {
     XTalkCoupling_Ring_1Chip_average = 0;
     ringChannelCount = 0;
 
-    cout << "Finisit initializing parameters" << endl;
+    cout << "Finish initializing parameters" << endl;
     
 }
 
@@ -1464,7 +1464,7 @@ void makePlots::init_rootDir() {
 	sprintf(title,"Pedestal_Run");
 	cdinjCh = outfile->mkdir(title);
     }
-    else if ( acquisitionType == "sweep" ) {
+    else if ( acquisitionType == "sweep" || acquisitionType == "const_inj" ) {
 	if( !oneChannelInjection_flag )
 	    sprintf(title,"InjCh%d",injCh);
 	else 
