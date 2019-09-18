@@ -421,7 +421,10 @@ void makePlots::const_injPlotter() {
 		    inj_channel = ( ichip * NCH ) + injCh;
 
 		XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
-		h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
+		if ( ichannel == inj_channel )
+		    h_xtalkCoupling[ichannel]->Fill(0);
+		else
+		    h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
 		
 
 #ifdef DEBUG 
