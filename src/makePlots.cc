@@ -466,7 +466,7 @@ void makePlots::const_injPlotter() {
     /// --------------- End Loop of const_injPlotter --------------- ///
 
     /// Fit
-    //fit_const_inj_Histo();
+    fit_const_inj_Histo();
     
     ///
     /// Plots!!!!!
