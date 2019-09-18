@@ -1529,7 +1529,7 @@ void makePlots::init_histo() {
 void makePlots::fit_const_inj_Histo() {
     
     /// Fit 
-    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+    for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
 	
 	h_mip[ichannel]->Fit("gaus","Q");
 	mipFitMean [ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(1);
