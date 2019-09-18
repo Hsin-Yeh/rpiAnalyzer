@@ -422,7 +422,7 @@ void makePlots::const_injPlotter() {
 
 		XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
 		if ( ichannel == inj_channel )
-		    h_xtalkCoupling[ichannel]->Fill(0);
+		    h_xtalkCoupling[ichannel]->Fill(1);
 		else
 		    h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
 		
