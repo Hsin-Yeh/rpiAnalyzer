@@ -43,6 +43,7 @@ public:
     void sweepPlotter();
     void const_injPlotter();
     void cosmicAnalyzer();
+    void Gain_factor_producer();
     void Pulse_display( int displayChannel = -1 , int acq_type = 0, int lowerR = -1, int upperR = -1 , int startEv = 0 );
   
     //public parameter
@@ -66,13 +67,13 @@ private:
     // private function
     double  mipConverter( double hg_SubPed, double lg_SubPed, double tot , int channel );
     bool    totFireCheck(int eventID);
+    bool    totFireCheck_chip(int chip, double lg, double tot){
     int     ringPositionFinder( int inj_channel, int channel);
     double  CMCalculator( double **sig_SubPed, int *TS );
     double* CMCalculator_v2(double **sig_SubPed, int chip );
     void    Pedestal_CM_Subtractor( int chip );
     bool    mipSigCheck( double *sig, int *TS );
     void    Crosstalk(Int_t ch);
-    void    Gain_factor_producer();
     void    deallocate();
 
     // src_txtfile reader 
@@ -126,6 +127,7 @@ private:
     char           plot_dir[100];
     TLatex         latex;
     int            goodEventCount;
+    //int            goodEventCount_chip[NCHIP];
 
     // TDirectories
     TDirectory *cdinjCh;

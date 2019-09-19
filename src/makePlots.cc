@@ -666,6 +666,13 @@ bool makePlots::totFireCheck(int eventID){
     return totFire_flag;
 }
 
+bool makePlots::totFireCheck_chip(int chip, double lg, double tot){
+    bool totFire_flag = true;
+    if ( lg > LGTP[chip][injCh] && tot <= 4 ){ totFire_flag = false; }
+
+    returen totFire_flag;
+}
+
 
 ///
 /// ==================== ringPositionFinder ==================== ///
@@ -1115,6 +1122,7 @@ void makePlots::InitTH2Poly(TH2Poly& poly)
 ///
 /// ==================== Gain_factor_producer ==================== ///
 ///
+/*
 void makePlots::Gain_factor_producer(){
   
     //-------------------- Define Parameters --------------------
@@ -1146,27 +1154,42 @@ void makePlots::Gain_factor_producer(){
     for(int ev = 0; ev < TotalEntries; ev++){
 	if(ev%1000 == 0){ cout << "Now Processing = " << ev << endl;}
 	Chain1->GetEntry(ev);
-	dac_ctrl[event] = dacinj;
+
     
 	int TS0_sca, MaxTS_sca;
 	for(int sca = 0 ; sca < NSCA ; sca++) {
 	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
 	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
 	}
-    
-    
-	hg_injCh[chip][event] = ( hg[MaxTS_sca][injCh] - hg[TS0_sca][injCh] );
-	lg_injCh[chip][event] = ( lg[MaxTS_sca][injCh] - lg[TS0_sca][injCh] );
-	tot_injCh[chip][event] = tot_slow[injCh];
 
-
-	if(hg_injCh[chip][event] > HGTP[chip][injCh] && HGTP_flag[chip] == false){
-	    HGTP_flag[chip] = true;
-	    HGLGfitmax[chip] = lg_injCh[chip][event];
+	/// Passing hg, lg to self define array
+	for (int ich = 0; ich < NCH; ich++){
+	    for (int sca = 0; sca < NSCA; sca++){
+		hg_sig[ich][sca] = hg[sca][ich];
+		lg_sig[ich][sca] = lg[sca][ich];
+	    }
 	}
-	if(lg_injCh[chip][event] > LGTP[chip][injCh] && LGTP_flag[chip] == false){
+	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+
+	if ( totFireCheck_chip ( chip, lg_sig[injCh][MaxTS_sca], tot_slow[injCh] ) == false ) continue;
+
+	goodEventCount_chip[chip]++;
+	hg_injCh[chip][goodEventCount_chip[chip]] = hg_sig[injCh][MaxTS_sca];
+	lg_injCh[chip][goodEventCount_chip[chip]] = lg_sig[injCh][MaxTS_sca];
+	tot_injCh[chip][goodEventCount_chip[chip]] = tot_slow[injCh];
+	dac_ctrl[goodEventCount_chip[chip]] = dacinj;
+#ifdef DEBUG	
+	cout << hg_injCh[chip][goodEventCount_chip[chip]] << " " << lg_injCh[chip][goodEventCount_chip[chip]] << " " << tot_injCh[chip][goodEventCount_chip[chip]] << endl;
+#endif
+	
+
+	if(hg_injCh[chip][goodEventCount_chip[chip]] > HGTP[chip][injCh] && HGTP_flag[chip] == false){
+	    HGTP_flag[chip] = true;
+	    HGLGfitmax[chip] = lg_injCh[chip][goodEventCount_chip[chip]];
+	}
+	if(lg_injCh[chip][goodEventCount_chip[chip]] > LGTP[chip][injCh] && LGTP_flag[chip] == false){
 	    LGTP_flag[chip] = true;
-	    TOTLGfitmax[chip] = tot_injCh[chip][event];
+	    TOTLGfitmax[chip] = tot_injCh[chip][goodEventCount_chip[chip]];
 	}
     }
 
@@ -1191,15 +1214,17 @@ void makePlots::Gain_factor_producer(){
     TGraph** TOT2LG = new TGraph*[NCHIP];
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
-	gh[ichip] = new TGraph(Nevents,dac_ctrl,hg_injCh[ichip]);
-	gl[ichip] = new TGraph(Nevents,dac_ctrl,lg_injCh[ichip]);
-	gtot[ichip] = new TGraph(Nevents,dac_ctrl,tot_injCh[ichip]);
-	LG2HG[ichip] = new TGraph(Nevents,lg_injCh[ichip],hg_injCh[ichip]);
-	TOT2LG[ichip] = new TGraph(Nevents,tot_injCh[ichip],lg_injCh[ichip]);
+	gh[ichip] = new TGraph(goodEventCount_chip[ichip],dac_ctrl,hg_injCh[ichip]);
+	gl[ichip] = new TGraph(goodEventCount_chip[ichip],dac_ctrl,lg_injCh[ichip]);
+	gtot[ichip] = new TGraph(goodEventCount_chip[ichip],dac_ctrl,tot_injCh[ichip]);
+	LG2HG[ichip] = new TGraph(goodEventCount_chip[ichip],lg_injCh[ichip],hg_injCh[ichip]);
+	TOT2LG[ichip] = new TGraph(goodEventCount_chip[ichip],tot_injCh[ichip],lg_injCh[ichip]);
     
 	LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = HGLGfitmax[ichip]);
+	LG2HG[ichip]->GetFunction("pol1")->SetLineColor(3);
 	//TOT2LG[ichip]->Fit("pol1","","",fitmin = TOTOffSet,fitmax = TOTLGfitmax[ichip]);
-	TOT2LG[ichip]->Fit("pol1","","",fitmin = 200,fitmax = 300);
+	TOT2LG[ichip]->Fit("pol1","","",fitmin = 200,fitmax = 400);
+	TOT2LG[ichip]->GetFunction("pol1")->SetLineColor(3);
     
 	TF1* Linear_fit_LG2HG = LG2HG[ichip]->GetFunction("pol1");
 	TF1* Linear_fit_TOT2LG = TOT2LG[ichip]->GetFunction("pol1");
@@ -1207,28 +1232,23 @@ void makePlots::Gain_factor_producer(){
 	TOT2LG_Conversion[ichip][injCh] = Linear_fit_TOT2LG->GetParameter(1);
 	TOTOffSet[ichip][injCh] = -Linear_fit_TOT2LG->GetParameter(0)/Linear_fit_TOT2LG->GetParameter(1);
 	cout << LG2HG_Conversion[ichip][injCh] << " " <<  TOT2LG_Conversion[ichip][injCh] << " " << TOTOffSet[ichip][injCh] << endl;
-	/*
-	  TOT2LG[ichip]->Draw("AP");
-	  c1->Update();
-	  gPad->WaitPrimitive();
-	*/
 	sprintf(pltTit,"HG_Chip%d",ichip);
-	P.GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 1);
+	P.GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
 
 	sprintf(pltTit,"LG_Chip%d",ichip);
-	P.GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 1);
+	P.GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
 
 	sprintf(pltTit,"TOT_Chip%d",ichip);
-	P.GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 1);
+	P.GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
     
 	sprintf(pltTit,"LG2HG_Chip%d",ichip);
-	P.GStd(*LG2HG[ichip], pltTit, Xtit = "LG", Ytit = "HG", Opt = "AP", Wait = 0, SavePlot = 1);
+	P.GStd(*LG2HG[ichip], pltTit, Xtit = "LG", Ytit = "HG", Opt = "AP", Wait = 1, SavePlot = 1);
     
 	sprintf(pltTit,"TOT2LG_Chip%d",ichip);
-	P.GStd(*TOT2LG[ichip], pltTit, Xtit = "TOT", Ytit = "LG", Opt = "AP", Wait = 0, SavePlot = 1);
+	P.GStd(*TOT2LG[ichip], pltTit, Xtit = "TOT", Ytit = "LG", Opt = "AP", Wait = 1, SavePlot = 1);
     }
 }
-
+*/
 ///
 /// ==================== Crosstalk ==================== ///
 ///
@@ -1414,6 +1434,9 @@ void makePlots::init_analysisParameter() {
     XTalkCoupling_Ring_1Chip_average = 0;
     ringChannelCount = 0;
     goodEventCount = 0;
+    for( int ichip = 0; ichip < NCHIP; ichip++) {
+	goodEventCount_chip[ichip] = 0;
+    }
 
     cout << "Finish initializing parameters" << endl;
     

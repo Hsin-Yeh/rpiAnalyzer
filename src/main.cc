@@ -15,6 +15,7 @@ string noisyfile = "./src_txtfile/noisyChannels.txt";
 
 /// utility
 void main_makePlots();
+void main_gainfactor();
 void main_help();
 
 /// global parameters 
@@ -28,6 +29,7 @@ bool subPed_flag = true;
 bool oneChannelInjection_flag = false;
 bool makePlots_flag = true;
 bool help_flag = false;
+bool gain_flag = false;
 
 /// -------------------- main -------------------- ///
 int main(int argc, char** argv){
@@ -89,6 +91,11 @@ int main(int argc, char** argv){
 			startEv = atoi(arg_list[iarg+1].c_str());
 			iarg+=2;
 		}
+		else if ( arg == "-g" || arg == "-gain" ) {
+		    gain_flag = true;
+		    makePlots_flag = false;
+		    iarg++;
+		}
 		else if ( arg == "-h" || arg == "-help" ) {
 			help_flag = true;
 			makePlots_flag = false;
@@ -102,10 +109,34 @@ int main(int argc, char** argv){
 		}
 	}
 	if ( makePlots_flag ) { main_makePlots(); }
+	else if ( gain_flag ) { main_gainfactor(); }
 	else if ( help_flag ) { main_help(); }
-	
 	return (0);
 }
+
+/*
+void main_gainfactor() {
+	TChain *chain1 = new TChain("treeproducer/sk2cms");
+	TChain *chain2 = new TChain("pulseshapeplotter/tree");
+	string filename;
+	ifstream infile("data_input.txt");
+	infile >> filename;
+	infile.close();
+	if( filename.length() > 2){
+		cout << "inputFile = " << filename << endl << endl;
+		chain1->Add(filename.c_str());
+		chain2->Add(filename.c_str());
+	}
+	else
+		cout << "There is no input root file written in the input.txt!" << endl;
+
+	makePlots* M = new makePlots(chain1, chain2);
+	M->input_fileName = filename;
+	M->subPed_flag = subPed_flag;
+	M->Init( pedfile, gainfile, noisyfile );
+	M->Gain_factor_producer();
+}
+*/
 
 /// -------------------- main_makePlots -------------------- ///
 void main_makePlots() {
