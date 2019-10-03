@@ -3,10 +3,10 @@
 
 // This class is the main class for analyzing the rpi data 
 
-
 #ifndef makePlots_h
 #define makePlots_h
 
+#include "ntuplizer.h"
 #include "TChain.h"
 #include "TH2Poly.h"
 #include "TApplication.h"
@@ -22,13 +22,6 @@
 #include <map>     //std::map
 
 using namespace std;
-
-const int NCHIP = 4;
-const int NCH = 64;
-const int NSCA = 13;
-const int NformatCH = 128;
-const int NCHANNEL = 256;
-const int NRings = 5;
 
 class makePlots{
 public:
@@ -67,7 +60,7 @@ private:
     // private function
     double  mipConverter( double hg_SubPed, double lg_SubPed, double tot , int channel );
     bool    totFireCheck(int eventID);
-    bool    totFireCheck_chip(int chip, double lg, double tot){
+    bool    totFireCheck_chip(int chip, double lg, double tot);
     int     ringPositionFinder( int inj_channel, int channel);
     double  CMCalculator( double **sig_SubPed, int *TS );
     double* CMCalculator_v2(double **sig_SubPed, int chip );
@@ -127,7 +120,7 @@ private:
     char           plot_dir[100];
     TLatex         latex;
     int            goodEventCount;
-    //int            goodEventCount_chip[NCHIP];
+    int            goodEventCount_chip[NCHIP];
 
     // TDirectories
     TDirectory *cdinjCh;

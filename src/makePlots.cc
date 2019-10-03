@@ -1,10 +1,11 @@
 #include "makePlots.h"
-#include "rootFileIntegrator.h"
+//#include "rootFileIntegrator.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <math.h>
 #include "TFile.h"
+
 #include "TGraph.h"
 #include "TMultiGraph.h"
 #include "TSystem.h"
@@ -227,13 +228,11 @@ void makePlots::sweepPlotter(){
 
 	/// Injection & Cross Talk Analysis
 	for(int ich = 0; ich < NCH; ich++){
-	    bool injch_flag = false;
 	    int channel      = ich + chip*64;
 	    double hg = hg_sig[ich][MaxTS_sca];
 	    double lg = lg_sig[ich][MaxTS_sca];
 	    double tot = tot_slow[ich];
-	    int inj_channel;
-	    
+	 	    
 	    hg_allCh[channel][event]  = hg;
 	    lg_allCh[channel][event]  = lg;
 	    tot_allCh[channel][event] = tot;
@@ -358,7 +357,6 @@ void makePlots::const_injPlotter() {
 
         /// Define Parameters 
     int MaxTS = 2; //choose this time sample to be the peak
-    int AverageEvents = 0;
 
   
     /// --------------- Start Loop of const_injPlotter --------------- ///
@@ -670,7 +668,7 @@ bool makePlots::totFireCheck_chip(int chip, double lg, double tot){
     bool totFire_flag = true;
     if ( lg > LGTP[chip][injCh] && tot <= 4 ){ totFire_flag = false; }
 
-    returen totFire_flag;
+    return totFire_flag;
 }
 
 
@@ -764,6 +762,12 @@ void makePlots::yamlReader(){
 		start = line.find("moduleNumber:");
 		end = line.find(",");
 		searchstr = line.substr(start+14,end-start-14);
+		if ( searchstr.find("'") != -1 ) {
+		    start = searchstr.find("'");
+		    end = searchstr.find_last_of("'");
+		    cout << start << " " << end << endl;
+		    searchstr = searchstr.substr(start+1,end-start-1);
+		}
 		moduleNumber = searchstr;
 		cout << "moduleNumber = " << moduleNumber << endl;
 	    }
@@ -1122,7 +1126,7 @@ void makePlots::InitTH2Poly(TH2Poly& poly)
 ///
 /// ==================== Gain_factor_producer ==================== ///
 ///
-/*
+
 void makePlots::Gain_factor_producer(){
   
     //-------------------- Define Parameters --------------------
@@ -1131,8 +1135,8 @@ void makePlots::Gain_factor_producer(){
     int Nevents = TotalEntries/NCHIP;
     int MaxTS = 2;
 
-    int hg_injCh[NCHIP][Nevents], lg_injCh[NCHIP][Nevents], tot_injCh[NCHIP][Nevents];
-    int dac_ctrl[Nevents];
+    vector<int> hg_injCh[NCHIP], lg_injCh[NCHIP], tot_injCh[NCHIP];
+    vector<int> dac_ctrl[NCHIP];
     int HGLGfitmax[NCHIP], TOTLGfitmax[NCHIP];
     bool HGTP_flag[NCHIP], LGTP_flag[NCHIP];
 
@@ -1174,15 +1178,16 @@ void makePlots::Gain_factor_producer(){
 	if ( totFireCheck_chip ( chip, lg_sig[injCh][MaxTS_sca], tot_slow[injCh] ) == false ) continue;
 
 	goodEventCount_chip[chip]++;
-	hg_injCh[chip][goodEventCount_chip[chip]] = hg_sig[injCh][MaxTS_sca];
-	lg_injCh[chip][goodEventCount_chip[chip]] = lg_sig[injCh][MaxTS_sca];
-	tot_injCh[chip][goodEventCount_chip[chip]] = tot_slow[injCh];
-	dac_ctrl[goodEventCount_chip[chip]] = dacinj;
+	hg_injCh[chip].push_back( hg_sig[injCh][MaxTS_sca] );
+	lg_injCh[chip].push_back( lg_sig[injCh][MaxTS_sca] );
+	tot_injCh[chip].push_back( tot_slow[injCh] );
+	dac_ctrl[chip].push_back( dacinj );
+	
 #ifdef DEBUG	
-	cout << hg_injCh[chip][goodEventCount_chip[chip]] << " " << lg_injCh[chip][goodEventCount_chip[chip]] << " " << tot_injCh[chip][goodEventCount_chip[chip]] << endl;
+	cout << "event " << event << " chip " << chip << " goodevent" << goodEventCount_chip[chip] << " hg " <<  hg_injCh[chip][goodEventCount_chip[chip]] << " lg " << lg_injCh[chip][goodEventCount_chip[chip]] << " tot " << tot_injCh[chip][goodEventCount_chip[chip]] << endl;
 #endif
 	
-
+	
 	if(hg_injCh[chip][goodEventCount_chip[chip]] > HGTP[chip][injCh] && HGTP_flag[chip] == false){
 	    HGTP_flag[chip] = true;
 	    HGLGfitmax[chip] = lg_injCh[chip][goodEventCount_chip[chip]];
@@ -1191,8 +1196,13 @@ void makePlots::Gain_factor_producer(){
 	    LGTP_flag[chip] = true;
 	    TOTLGfitmax[chip] = tot_injCh[chip][goodEventCount_chip[chip]];
 	}
+	
     }
-
+    for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
+	for( int i = 0; i < goodEventCount_chip[ichip]; i++ ){
+	    cout << dac_ctrl[ichip][i] << "  " << hg_injCh[ichip][i] << " " << lg_injCh[ichip][i] << " " << tot_injCh[ichip][i] << endl;
+	}
+    }
   
     //==================== End Loop ====================
 
@@ -1203,7 +1213,6 @@ void makePlots::Gain_factor_producer(){
     char pltTit[100];
     string Xtit, Ytit, Opt;
     int MkSty, MkClr, LClr, fitmin, fitmax;
-    float MkSize, LWid;
     bool Stat, Wait, SavePlot;
     TCanvas *c1 = new TCanvas();
 
@@ -1214,16 +1223,19 @@ void makePlots::Gain_factor_producer(){
     TGraph** TOT2LG = new TGraph*[NCHIP];
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
-	gh[ichip] = new TGraph(goodEventCount_chip[ichip],dac_ctrl,hg_injCh[ichip]);
-	gl[ichip] = new TGraph(goodEventCount_chip[ichip],dac_ctrl,lg_injCh[ichip]);
-	gtot[ichip] = new TGraph(goodEventCount_chip[ichip],dac_ctrl,tot_injCh[ichip]);
-	LG2HG[ichip] = new TGraph(goodEventCount_chip[ichip],lg_injCh[ichip],hg_injCh[ichip]);
-	TOT2LG[ichip] = new TGraph(goodEventCount_chip[ichip],tot_injCh[ichip],lg_injCh[ichip]);
-    
-	LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = HGLGfitmax[ichip]);
+	gh[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &hg_injCh[ichip][0] );
+	gl[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &lg_injCh[ichip][0]);
+	gtot[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &tot_injCh[ichip][0]);
+	LG2HG[ichip] = new TGraph( goodEventCount_chip[ichip], &lg_injCh[ichip][0], &hg_injCh[ichip][0]);
+	TOT2LG[ichip] = new TGraph( goodEventCount_chip[ichip], &tot_injCh[ichip][0], &lg_injCh[ichip][0]);
+
+	gtot[ichip]->Fit("pol1","ROB","",fitmin = 1000,fitmax = 3000);
+	gtot[ichip]->GetFunction("pol1")->SetLineColor(3);
+	LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = 200);
+	//LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = HGLGfitmax[ichip]);
 	LG2HG[ichip]->GetFunction("pol1")->SetLineColor(3);
 	//TOT2LG[ichip]->Fit("pol1","","",fitmin = TOTOffSet,fitmax = TOTLGfitmax[ichip]);
-	TOT2LG[ichip]->Fit("pol1","","",fitmin = 200,fitmax = 400);
+	TOT2LG[ichip]->Fit("pol1","ROB","",fitmin = 200,fitmax = 400);
 	TOT2LG[ichip]->GetFunction("pol1")->SetLineColor(3);
     
 	TF1* Linear_fit_LG2HG = LG2HG[ichip]->GetFunction("pol1");
@@ -1248,7 +1260,7 @@ void makePlots::Gain_factor_producer(){
 	P.GStd(*TOT2LG[ichip], pltTit, Xtit = "TOT", Ytit = "LG", Opt = "AP", Wait = 1, SavePlot = 1);
     }
 }
-*/
+
 ///
 /// ==================== Crosstalk ==================== ///
 ///
@@ -2169,7 +2181,7 @@ void makePlots::output_xtalkCoupling() {
     f.open(title, ios::out | ios::app );
     cout << "write " << title << endl;
     cout << XTalkCoupling_Ring_1Chip_average << endl;
-    f << injChip << " " << injCh << " " << sensor2hexaboard[injChip*32 + injCh/2] << " " << XTalkCoupling_Ring_1Chip_average << " " << fit_intersept << " " << fit_slope << endl;
+    f << injChip << '\t' << injCh << '\t' << sensor2hexaboard[injChip*32 + injCh/2] << '\t' << XTalkCoupling_Ring_1Chip_average << '\t' << fit_intersept << '\t' << fit_slope << std::endl;
 }
 
 void makePlots::output_xtalkCoupling_all(bool start, bool end, int channel) {
@@ -2180,11 +2192,11 @@ void makePlots::output_xtalkCoupling_all(bool start, bool end, int channel) {
     cout << XTalkCoupling_Ring_1Chip_average << endl;
 
     if (start) 
-	f << injChip << " " << injCh << " " << sensor2hexaboard[injChip*32 + injCh/2] << endl;
+	f << injChip << '\t' << injCh << '\t' << sensor2hexaboard[injChip*32 + injCh/2] << endl;
     else if (end)
 	f << "===" << endl << endl;
     else
-	f << channel/64 << " " << channel%64 << " " << sensor2hexaboard[channel/2] << " " << XTalkCoupling_Average[channel] << " " << fit_intersept << " " << fit_slope << endl;
+	f << channel/64 << '\t' << channel%64 << '\t' << sensor2hexaboard[channel/2] << '\t' << XTalkCoupling_Average[channel] << '\t' << fit_intersept << '\t' << fit_slope << std::endl;
 }
 
 
@@ -2210,5 +2222,10 @@ void makePlots::deallocate() {
     delete hg_NoisyChannel;
 
 }
+
+
+
+
+
 
 
