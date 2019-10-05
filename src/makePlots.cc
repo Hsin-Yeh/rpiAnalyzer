@@ -60,6 +60,11 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile, bool ba
     sprintf(plot_dir,"plots/%s",moduleNumber.c_str());
         
     // init Canvas
+    if ( batch_flag ) 
+	gROOT->SetBatch("kTRUE");
+    else
+	gROOT->SetBatch("kFALSE");
+    
     app = new TApplication("app",0,0);
     c = new TCanvas();
 	
