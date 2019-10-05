@@ -60,9 +60,10 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile, bool ba
     sprintf(plot_dir,"plots/%s",moduleNumber.c_str());
         
     // init Canvas
+    cout << batch_flag << endl;
     if ( batch_flag ) 
 	gROOT->SetBatch("kTRUE");
-    else
+    else 
 	gROOT->SetBatch("kFALSE");
     
     app = new TApplication("app",0,0);
