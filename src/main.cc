@@ -172,6 +172,7 @@ void main_makePlots() {
     M->Init( pedfile, gainfile, noisyfile );
     if ( anaType == 0 ) {
 	cout << "Processing PlotProducer " << endl << endl;
+	gROOT->SetBatch("kTRUE");
 	if ( M->acquisitionType == "standard" ) { M->pedestalPlotter(); }
 	else if ( M->acquisitionType == "sweep" ) { M->sweepPlotter(); }
 	else if ( M->acquisitionType == "const_inj" ) { M->const_injPlotter(); }
