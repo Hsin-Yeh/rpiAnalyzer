@@ -973,6 +973,8 @@ bool makePlots::mipSigCheck( double *sig, int *TS ) {
 /// ==================== pulsePlotter ==================== ///
 ///
 void makePlots::pulsePlotter( double *sig, int *TS, int ev, int ichip, int ich, int lowerR, int upperR ) {
+
+    gROOT->SetBatch("kFALSE");
 	
     // This function plots the input 13 timesamples and show it on the screen 
     double double_TS[NSCA];
