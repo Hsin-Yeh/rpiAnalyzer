@@ -25,6 +25,7 @@ int  anaType = 0;
 int  pulseDisplay_type = 0;
 int  lowerR = -1, upperR = -1;
 int  startEv = 0;
+bool batch_flag = false;
 bool subPed_flag = true;
 bool oneChannelInjection_flag = false;
 bool finalGainFactor_flag = false;
@@ -49,6 +50,7 @@ int main(int argc, char** argv){
 	
 	if ( arg == "-p" ) {
 	    anaType = 1;
+	    batch_flag = true;
 	    if ( isNumber( arg_list[iarg+1] ) ) {
 		displayChannel = atoi(arg_list[iarg+1].c_str());
 		cout << "display channel = " << displayChannel << endl;
@@ -58,12 +60,14 @@ int main(int argc, char** argv){
 	}
 	else if ( arg == "-i" ) {
 	    cout << "display charge injection channel = " << endl;
+	    batch_flag = true;
 	    anaType = 1;
 	    pulseDisplay_type = 1; 
 	    iarg++;
 	}
 	else if ( arg == "-s" ) {
 	    anaType = 1;
+	    batch_flag = true;
 	    pulseDisplay_type = 2;
 	    iarg++;
 	}
@@ -169,10 +173,9 @@ void main_makePlots() {
     M->input_fileName = filename;
     M->oneChannelInjection_flag = oneChannelInjection_flag;
     M->subPed_flag = subPed_flag;
-    M->Init( pedfile, gainfile, noisyfile );
+    M->Init( pedfile, gainfile, noisyfile, batch_flag );
     if ( anaType == 0 ) {
 	cout << "Processing PlotProducer " << endl << endl;
-	gROOT->SetBatch("kTRUE");
 	if ( M->acquisitionType == "standard" ) { M->pedestalPlotter(); }
 	else if ( M->acquisitionType == "sweep" ) { M->sweepPlotter(); }
 	else if ( M->acquisitionType == "const_inj" ) { M->const_injPlotter(); }

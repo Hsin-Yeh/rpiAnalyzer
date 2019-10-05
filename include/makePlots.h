@@ -31,7 +31,7 @@ public:
 
     
     //public function
-    void Init( string pedfile, string gainfile, string noisyfile );
+    void Init( string pedfile, string gainfile, string noisyfile, bool batch_flag );
     void pedestalPlotter();
     void sweepPlotter();
     void const_injPlotter();

@@ -32,7 +32,7 @@ makePlots::~makePlots()
 ///
 /// ==================== Init ==================== ///
 ///
-void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
+void makePlots::Init( string pedfile, string gainfile, string noisyfile, bool batch_flag ){
     
     cout << "----------Init start----------" << endl;
     // read init files and initialize
