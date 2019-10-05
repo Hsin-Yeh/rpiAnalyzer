@@ -59,7 +59,7 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile ){
     system(command);
     sprintf(plot_dir,"plots/%s",moduleNumber.c_str());
         
-    // init Canvas 
+    // init Canvas
     //gROOT->SetBatch("kTRUE");
     app = new TApplication("app",0,0);
     c = new TCanvas();
@@ -1546,6 +1546,11 @@ void makePlots::init_rootDir() {
 
 	cdinjCh = outfile->mkdir(title);
     }
+    else if ( acquisitionType == "external_trigger" ) {
+	sprintf(title,"External_trigger");
+	cdinjCh = outfile->mkdir(title);
+    }
+    
     cdallCh = cdinjCh->mkdir("allCh_hglgtot");
     cdinj = cdinjCh->mkdir("injection_analysis_plots");
     cdPedestal_histo = cdinjCh->mkdir("Pedestal_histo");
