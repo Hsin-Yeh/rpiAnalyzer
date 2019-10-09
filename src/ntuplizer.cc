@@ -2,6 +2,7 @@
 #include "PlotSetting.h"
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include "TGraph.h"
 #include "TStyle.h"
 #include "TROOT.h"
@@ -38,6 +39,8 @@ void ntuplizer::Init(string pedfile, string gainfile, string noisyfile ) {
     c = new TCanvas();
     cout << "----------Init complete----------" << endl << endl;
 
+    P = new PlotSetting();
+    P->root_logon();
 }
 
 
@@ -78,6 +81,7 @@ void ntuplizer::ntupleProducer() {
 	    int inj_channel = ichip*64 + injCh;
 	    hg_injCh[ichip].push_back( hg_sig[inj_channel][MaxTS_sca] );
 	    lg_injCh[ichip].push_back( lg_sig[inj_channel][MaxTS_sca] );
+	    //cout << event << " " << ichip << " " << hg_sig[inj_channel][MaxTS_sca] << " " << lg_sig[inj_channel][MaxTS_sca] << endl;
 	    tot_injCh[ichip].push_back( tot_sig[inj_channel] );
 	}
 	dac_ctrl.push_back( dacinj );
@@ -166,7 +170,7 @@ void ntuplizer::ntupleProducer() {
 	    tot_out[ichannel] = tot_sig[ichannel];
 	}
 	
-	outT->Fill();
+	//outT->Fill();
     }
 
     injectionPlots();
@@ -592,7 +596,7 @@ void ntuplizer::output_gainFactor() {
 
     for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	if ( oneChannelInjection_flag && ichip!=injChip ) continue;
-	f << ichip << " " << injCh << " " << HGTP[ichip][injCh] << " "  << LG2HG_Conversion[ichip][injCh] << " " << LGTP[ichip][injCh] << " " << TOT2LG_Conversion[ichip][injCh] << endl;
+	f << ichip << " " << injCh << " " << HG2DAC[ichip][injCh] << " " << HGTP[ichip][injCh] << " "  << LG2DAC[ichip][injCh] << " " << LGTP[ichip][injCh] << " " << TOT2DAC[ichip][injCh] << " " << TOTOffSet[ichip][injCh] << endl;
     }
     
 }
@@ -606,7 +610,7 @@ void ntuplizer::readNsort_gainFactor() {
     ifile.open(title);
 
     while ( !ifile.eof() ) {
-	ifile >> ichip >> ich >> HGTP[ichip][ich] >> LG2HG_Conversion[ichip][ich] >> LGTP[ichip][ich] >> TOT2LG_Conversion[ichip][ich];
+	ifile >> ichip >> ich >> HG2DAC[ichip][ich] >> HGTP[ichip][ich] >> LG2DAC[ichip][ich] >> LGTP[ichip][ich] >> TOT2DAC[ichip][ich] >> TOTOffSet[ichip][ich];
     }
     ifile.close();
 
@@ -614,7 +618,7 @@ void ntuplizer::readNsort_gainFactor() {
     ofile.open(title);
     for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	for ( int ich = 0; ich < NCH; ich+=2 ) {
-	    ofile << ichip << '\t' << ich << '\t' << HGTP[ichip][ich] << '\t'  << LG2HG_Conversion[ichip][ich] << '\t' << LGTP[ichip][ich] << '\t' << TOT2LG_Conversion[ichip][ich] << endl;
+	    ofile << ichip << '\t' << ich << '\t' << fixed << setprecision(6) << HG2DAC[ichip][ich] << '\t' << fixed << setprecision(0) << HGTP[ichip][ich] << '\t' << fixed << setprecision(6) << LG2DAC[ichip][ich] << '\t' << fixed << setprecision(0) << LGTP[ichip][ich] << '\t' << fixed << setprecision(6) << TOT2DAC[ichip][ich] << '\t' << fixed << setprecision(3) << TOTOffSet[ichip][ich] << endl;
 	}
     }
 }
@@ -635,9 +639,6 @@ void ntuplizer::injectionPlots(){
     TGraph** gtot = new TGraph*[NCHIP];
     TGraph** LG2HG = new TGraph*[NCHIP];
     TGraph** TOT2LG = new TGraph*[NCHIP];
-
-    PlotSetting P;
-    P.root_logon();
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
 
@@ -660,27 +661,30 @@ void ntuplizer::injectionPlots(){
 	HGTP[ichip][injCh] = findFitEdge(Linear_fit_hg, dac_ctrl, hg_injCh[ichip] );
 	LGTP[ichip][injCh] = findFitEdge(Linear_fit_lg, dac_ctrl, lg_injCh[ichip] );
 
-	LG2HG_Conversion[ichip][injCh] = Linear_fit_lg->GetParameter(1) / Linear_fit_hg->GetParameter(1);
-	TOT2LG_Conversion[ichip][injCh] = Linear_fit_tot->GetParameter(1) / Linear_fit_lg->GetParameter(1);
+	HG2DAC[ichip][injCh] = 1 / Linear_fit_hg->GetParameter(1); 
+	LG2DAC[ichip][injCh] = 1 / Linear_fit_lg->GetParameter(1);
+	TOT2DAC[ichip][injCh] = 1 / Linear_fit_tot->GetParameter(1);
+	TOTOffSet[ichip][injCh] = Linear_fit_tot->GetParameter(0);
 	
 	sprintf(pltTit,"HG_Chip%d",ichip);
-	P.GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
 
 	sprintf(pltTit,"LG_Chip%d",ichip);
-	P.GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
 
 	sprintf(pltTit,"TOT_Chip%d",ichip);
-	P.GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
 	
     }
 
 }
 
 double ntuplizer::findFitEdge(TF1 *Linear_fit, vector<double> x, vector<double> y){
-    int i = 0;
+    int i = 2;
     while ( i < x.size() ) {
 	int deviation = abs(y.at(i) - Linear_fit->Eval(x.at(i)));
 	if ( deviation > 100 ) break;
+	
 	i++;
     }
     return y.at(i);

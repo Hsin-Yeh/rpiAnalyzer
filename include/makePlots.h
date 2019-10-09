@@ -44,6 +44,7 @@ public:
     bool subPed_flag;
     bool integrate_flag;
     bool oneChannelInjection_flag;
+    bool externalChargeInjection_flag;
 
     //yaml parameter
     int injCh;
@@ -157,12 +158,13 @@ private:
 
 
     //gainFactor parameter
-    double LG2HG_Conversion[NCHIP][NCH];
-    double TOT2LG_Conversion[NCHIP][NCH];
+    double LG2DAC[NCHIP][NCH];
+    double TOT2DAC[NCHIP][NCH];
     double HGTP[NCHIP][NCH];
     double LGTP[NCHIP][NCH];
     double TOTOffSet[NCHIP][NCH];
-    double ADC2MIP = 0.0227;
+    //double ADC2MIP = 0.0227;
+    double HG2DAC[NCHIP][NCH];
     double LGTP_default = 900;
 
     //noisy parameter

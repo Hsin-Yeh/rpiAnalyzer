@@ -60,11 +60,8 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile, bool ba
     sprintf(plot_dir,"plots/%s",moduleNumber.c_str());
         
     // init Canvas
-    cout << batch_flag << endl;
     if ( batch_flag ) 
 	gROOT->SetBatch("kTRUE");
-    //else 
-	//gROOT->SetBatch("kFALSE");
     
     app = new TApplication("app",0,0);
     c = new TCanvas();
@@ -252,9 +249,9 @@ void makePlots::sweepPlotter(){
 
 	/// Injection XTalk calculation
 	if ( chip == 3 ) {
-	    if ( totFireCheck(event) == false ) continue;
+	    //if ( totFireCheck(event) == false ) continue;
 	    
-	    goodEventCount++;
+
 	    
 	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
 		int ichip = ichannel / NCH;
@@ -311,6 +308,8 @@ void makePlots::sweepPlotter(){
 		    }
 		}
 	    }
+	    goodEventCount++;
+	    
 	}
     }
     /// --------------- End Loop of sweepPlotter --------------- ///
@@ -630,17 +629,17 @@ double makePlots::mipConverter( double hg_SubPed, double lg_SubPed, double tot ,
     double mip;
     int ichip = channel / NCH;
     int ich   = channel % NCH;
-  
+    
     if( hg_SubPed < HGTP[ichip][ich]){
-	mip = hg_SubPed * ADC2MIP;
+	mip = hg_SubPed * HG2DAC[ichip][ich];
     }
     else{
-	//if( lg_sig < LGTP[channel]){
-	if( lg_SubPed < LGTP_default){
-	    mip = ( lg_SubPed * LG2HG_Conversion[ichip][ich] * ADC2MIP);
+	if( lg_SubPed < LGTP[ichip][ich]){
+	    mip = lg_SubPed * LG2DAC[ichip][ich];
 	}
 	else{
-	    mip = ( (tot - TOTOffSet[ichip][ich]) * TOT2LG_Conversion[ichip][ich] * LG2HG_Conversion[ichip][ich] * ADC2MIP);
+	    mip =  (tot - TOTOffSet[ichip][ich]) * TOT2DAC[ichip][ich];
+	    //mip = tot*TOT2DAC[ichip][ich];
 	}
     }
     return mip;
@@ -754,7 +753,6 @@ void makePlots::yamlReader(){
 		    searchstr = line.erase(0,start+2);
 		    injCh = atoi(searchstr.c_str());
 		}
-				
 		cout << "InjCh = " << injCh << endl;
 	    }
 	    else if ( line.find("acquisitionType") != -1 ){
@@ -775,6 +773,14 @@ void makePlots::yamlReader(){
 		}
 		moduleNumber = searchstr;
 		cout << "moduleNumber = " << moduleNumber << endl;
+	    }
+	    else if ( line.find("externalChargeInjection") != -1 ) {
+		start = line.find(":");
+		searchstr = line.erase(0, start+2);
+		if ( searchstr == "true" )
+		    externalChargeInjection_flag = true;
+		else
+		    externalChargeInjection_flag = false;
 	    }
 	    else if ( line.find("chipId:") != -1 ) {
 		start = line.find(":");
@@ -801,8 +807,6 @@ void makePlots::yamlReader(){
 ///
 void makePlots::GainFactorReader( string gainfile ){
 
-    string TB_GainFactors("src_txtfile/TPro_fittingoutput.txt");
-  
     ifstream GainFile(gainfile);
     string line;
     char tmp[50];
@@ -813,9 +817,9 @@ void makePlots::GainFactorReader( string gainfile ){
 	for(ichip = 0; ichip < NCHIP; ichip++){
 	    for(ich = 0; ich < NCH; ich++){
 		HGTP[ichip][ich] = 1500;
-		LG2HG_Conversion[ichip][ich] = 8.5;
+		LG2DAC[ichip][ich] = 8.5;
 		LGTP[ichip][ich] = 900;
-		TOT2LG_Conversion[ichip][ich] = 3.8;
+		TOT2DAC[ichip][ich] = 3.8;
 		TOTOffSet[ichip][ich] = 180;
 	    }
 	}
@@ -826,9 +830,13 @@ void makePlots::GainFactorReader( string gainfile ){
 	cout << "gainFile = " << gainfile << endl;
 	getline(GainFile,line);
 	while(!GainFile.eof()){
+	    /*
 	    GainFile >> tmp >> tmp >> ichip >> ich >> tmp;
 	    GainFile >> HGTP[ichip][ich] >> LG2HG_Conversion[ichip][ich] >> LGTP[ichip][ich] >> TOT2LG_Conversion[ichip][ich] >> TOTOffSet[ichip][ich];
 	    getline(GainFile,line);
+	    */
+	    GainFile >> ichip >> ich;
+	    GainFile >> HG2DAC[ichip][ich] >> HGTP[ichip][ich] >> LG2DAC[ichip][ich] >> LGTP[ichip][ich] >> TOT2DAC[ichip][ich] >> TOTOffSet[ichip][ich];
 	}
     }
     cout << endl;
@@ -1230,6 +1238,7 @@ void makePlots::Gain_factor_producer(){
     TGraph** TOT2LG = new TGraph*[NCHIP];
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
+	/*
 	gh[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &hg_injCh[ichip][0] );
 	gl[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &lg_injCh[ichip][0]);
 	gtot[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &tot_injCh[ichip][0]);
@@ -1244,7 +1253,7 @@ void makePlots::Gain_factor_producer(){
 	//TOT2LG[ichip]->Fit("pol1","","",fitmin = TOTOffSet,fitmax = TOTLGfitmax[ichip]);
 	TOT2LG[ichip]->Fit("pol1","ROB","",fitmin = 200,fitmax = 400);
 	TOT2LG[ichip]->GetFunction("pol1")->SetLineColor(3);
-    
+
 	TF1* Linear_fit_LG2HG = LG2HG[ichip]->GetFunction("pol1");
 	TF1* Linear_fit_TOT2LG = TOT2LG[ichip]->GetFunction("pol1");
 	LG2HG_Conversion[ichip][injCh] = Linear_fit_LG2HG->GetParameter(1);
@@ -1265,6 +1274,7 @@ void makePlots::Gain_factor_producer(){
     
 	sprintf(pltTit,"TOT2LG_Chip%d",ichip);
 	P.GStd(*TOT2LG[ichip], pltTit, Xtit = "TOT", Ytit = "LG", Opt = "AP", Wait = 1, SavePlot = 1);
+	*/
     }
 }
 
@@ -1885,7 +1895,7 @@ void makePlots::oneChannelInjection_injectionPlots(){
 	gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
 	gXTalkCoupling->SetLineWidth(0);
 	gXTalkCoupling->SetFillColor(0);
-	TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
+	TF1 *f1 = new TF1("f1","[0]+[1]*x",500,3500);
 	gXTalkCoupling->Fit("f1","R");
 	fit_intersept = f1->GetParameter(0);
 	fit_slope = f1->GetParameter(1);
@@ -1997,6 +2007,7 @@ void makePlots::injectionPlots_allCh() {
 	sprintf(title,"xtalk_Ch%d", ichannel);
 	gXTalkCoupling->SetTitle(title);
 	gXTalkCoupling->SetName(title);
+	
 	
 	int iring = ringPositionFinder( inj_channel, ichannel );
 	if (iring ==  1) {

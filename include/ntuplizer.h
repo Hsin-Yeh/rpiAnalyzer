@@ -6,6 +6,7 @@
 #ifndef ntuplizer_h
 #define ntuplizer_h
 
+#include "PlotSetting.h"
 #include "TChain.h"
 #include "TH2Poly.h"
 #include "TApplication.h"
@@ -82,6 +83,7 @@ private:
 
 
     //private parameter
+    PlotSetting    *P;
     TCanvas        *c;
     TApplication   *app;
     TTree          *Chain1;
@@ -104,12 +106,12 @@ private:
 
 
     //gainFactor parameter
-    double LG2HG_Conversion[NCHIP][NCH];
-    double TOT2LG_Conversion[NCHIP][NCH];
+    double LG2DAC[NCHIP][NCH];
+    double TOT2DAC[NCHIP][NCH];
     double HGTP[NCHIP][NCH];
     double LGTP[NCHIP][NCH];
     double TOTOffSet[NCHIP][NCH];
-    double ADC2MIP = 0.0227;
+    double HG2DAC[NCHIP][NCH];
     double LGTP_default = 900;
 
     //noisy parameter
