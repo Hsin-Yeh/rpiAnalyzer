@@ -166,7 +166,7 @@ void makePlots::pedestalPlotter(){
 ///
 void makePlots::sweepPlotter(){
     
-    /// Define Parameters 
+    /// Define Parameters
     int MaxTS = 2; //choose this time sample to be the peak
     int AverageEvents = 0;
 
@@ -214,6 +214,8 @@ void makePlots::sweepPlotter(){
 	}
 #endif
 
+	//getchar();
+
     
 	/// Pedestal histograms
 	for (int ich = 0; ich < NCH; ich++){
@@ -251,8 +253,6 @@ void makePlots::sweepPlotter(){
 	if ( chip == 3 ) {
 	    //if ( totFireCheck(event) == false ) continue;
 	    
-
-	    
 	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
 		int ichip = ichannel / NCH;
 		int inj_channel;
@@ -263,15 +263,15 @@ void makePlots::sweepPlotter(){
 
 		mip_allCh_goodEvent[ichannel][goodEventCount] = mip_allCh[ichannel][event];
 		XTalkCoupling[ichannel][goodEventCount] = mip_allCh[ichannel][goodEventCount] / mip_allCh[inj_channel][goodEventCount];
+		if( goodEventCount>200 && goodEventCount<=700 ){
+		    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][goodEventCount];
+		    AverageEvents++;
+		}
 
 #ifdef DEBUG 
 		cout << "goodEventCount = " << goodEventCount << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][goodEventCount] << " Xtalk = " << XTalkCoupling[ichannel][goodEventCount] << endl;
 #endif
 	
-		if( goodEventCount>200 && goodEventCount<=700 ){
-		    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][goodEventCount];
-		    AverageEvents++;
-		}
 		/// Calulate goodEventCount ring Energy
 		int iring;
 		iring = ringPositionFinder( inj_channel, ichannel );
@@ -286,9 +286,8 @@ void makePlots::sweepPlotter(){
 			mip_Ring_4Chip[iring][ichip][goodEventCount] += mip_allCh[ichannel][goodEventCount];
 		}
 	    }
-
 	    
-	    /// Calculate XTalkCoupling 
+	    /// Calculate XTalkCoupling for FirstRing
 	    if ( oneChannelInjection_flag ) {
 		for(int iring = 1; iring < NRings; iring++) {
 		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / mip_Ring_1Chip[0][goodEventCount];
@@ -323,9 +322,9 @@ void makePlots::sweepPlotter(){
 	    //cout << "" << endl;
 	}
     }
-    cout << ringChannelCount << endl;
+    //cout << ringChannelCount << endl;
     XTalkCoupling_Ring_1Chip_average = XTalkCoupling_Ring_1Chip_average / (500 * ringChannelCount); 
-    for (int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
+    for (int ichannel = 0; ichannel < NCHANNEL; ichannel+=2) {
     	XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
     }
 
@@ -1838,7 +1837,7 @@ void makePlots::injectionPlots(){
     multig_XTalkCoupling_ring->GetYaxis()->SetTitle("EfirstRing / EInj");
     multig_XTalkCoupling_ring->GetYaxis()->SetTitleOffset(1.2);
     multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.1,0.1);
-    multig_XTalkCoupling_ring->GetXaxis()->SetRangeUser(200,1000);
+    //multig_XTalkCoupling_ring->GetXaxis()->SetRangeUser(200,1000);
     multig_XTalkCoupling_ring->Write();
     sprintf(title,"%s/XtalkCoupling_InjCh%d.png", plot_dir, injCh);
     c->SaveAs(title);
@@ -2080,7 +2079,7 @@ void makePlots::XTalk_poly() {
     poly->SetTitle(title);
     poly->SetName(title);
     poly->SetMarkerSize(1);
-    poly->SetMinimum(-0.05);
+    poly->SetMinimum(-0.02);
     poly->Draw("colztext");
     latex.SetTextSize(0.05);
     latex.SetTextAlign(13);  //align at top

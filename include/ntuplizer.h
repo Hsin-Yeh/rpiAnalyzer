@@ -128,6 +128,7 @@ private:
     double  	**toar_allCh;      
     double  	**toaf_r_allCh;
     int         goodEventCount;
+    vector<int> goodEvent;
     vector<double> hg_injCh[NCHIP];
     vector<double> lg_injCh[NCHIP];
     vector<double> tot_injCh[NCHIP];
@@ -214,16 +215,24 @@ private:
 
 
     // output TTree
-    TTree *outT = new TTree("rechit_var","rechit_var");
+    TTree *outT = new TTree("sk2cms","sk2cms");
+
+    // output root Dir
+    TDirectory *cdtree;
     
     // List of output variable
-    double hg_out[NCHANNEL];
-    double lg_out[NCHANNEL];
-    double tot_out[NCHANNEL];
-    double mip_out[NCHANNEL];
-    //double dac_out;
+    int event_out;
+    int chip_out;
+    int roll_out;
+    int dacinj_out;
+    int timesamp_out[13];
+    int hg_out[13][64];
+    int lg_out[13][64];
+    int tot_slow_out[64];
+    int tot_fast_out[64];
+    int toa_rise_out[64];
+    int toa_fall_out[64];
 
-    
     // map < key = chip*32+ch/2 , pair <x, y> > 
     map<int,pair < double,double > > CHmap;
 

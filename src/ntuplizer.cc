@@ -34,7 +34,7 @@ void ntuplizer::Init(string pedfile, string gainfile, string noisyfile ) {
     init_analysisParameter(); // always after init_rootBranch();
     
     // init Canvas 
-    gROOT->SetBatch("kTRUE");
+    //gROOT->SetBatch("kTRUE");
     app = new TApplication("app",0,0);
     c = new TCanvas();
     cout << "----------Init complete----------" << endl << endl;
@@ -72,11 +72,12 @@ void ntuplizer::ntupleProducer() {
 	    tot_sig[ chip*64 + ich ] = tot_slow[ich];
 	}
 
-	if ( chip != 3 ) continue; 
-	
 	if(subPed_flag) { Pedestal_CM_Subtractor(); } // Ped & CM Subtraction
-	if ( totFireCheck(MaxTS_sca) == false ) continue;
 
+      
+	if ( chip != 3 ) continue;
+	
+	if ( totFireCheck(MaxTS_sca) == false ) continue;
 	for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	    int inj_channel = ichip*64 + injCh;
 	    hg_injCh[ichip].push_back( hg_sig[inj_channel][MaxTS_sca] );
@@ -113,9 +114,8 @@ void ntuplizer::ntupleProducer() {
 	tot_injCh[ichip].clear();
 	dac_ctrl.clear();
     }
-    goodEventCount = 0;
 	
-
+    /// Second Loop --> Exclude the failure injection events ///
     for (int entry = 0; entry < TotalEntries; entry++) {
 
 	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
@@ -140,21 +140,18 @@ void ntuplizer::ntupleProducer() {
 	    tot_sig[ chip*64 + ich ] = tot_slow[ich];
 	}
 
-	if ( chip != 3 ) continue;
-
 	if(subPed_flag) { Pedestal_CM_Subtractor(); } // Ped & CM Subtraction
+
+	if ( chip != 3 ) continue;
 	if ( totFireCheck(MaxTS_sca)== false ) continue;
-	
 	int hg_residual  = abs ( hg_sig[injCh][MaxTS_sca] - Linear_fit_hg->Eval(dacinj) );
 	int lg_residual  = abs ( lg_sig[injCh][MaxTS_sca] - Linear_fit_lg->Eval(dacinj) );
 	int tot_residual = abs ( tot_slow[injCh] - Linear_fit_tot->Eval(dacinj) );
-
 	if ( dacinj > 500 ) {
 	    if ( tot_residual > 80 ) {
 		continue;
 	    }
 	}
-	
 	for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	    int inj_channel = ichip*64 + injCh;
 	    hg_injCh[ichip].push_back( hg_sig[inj_channel][MaxTS_sca] );
@@ -162,18 +159,47 @@ void ntuplizer::ntupleProducer() {
 	    tot_injCh[ichip].push_back( tot_sig[inj_channel] );
 	}
 	dac_ctrl.push_back( dacinj );
-	goodEventCount++;
 
-	for ( int ichannel = 0; ichannel < NCHANNEL; ichannel++ ) {
-	    hg_out[ichannel] = hg_sig[ichannel][MaxTS_sca];
-	    lg_out[ichannel] = lg_sig[ichannel][MaxTS_sca];
-	    tot_out[ichannel] = tot_sig[ichannel];
-	}
-	
-	//outT->Fill();
+	goodEvent.push_back( entry - 3 );
     }
 
     injectionPlots();
+
+    goodEventCount = 0;
+    int ev = 0;
+    /// Third Loop --> Fill the ntuples
+    for ( int entry = 0; entry < Nevents; entry+=4 ) {
+	
+	if ( entry != goodEvent.at(goodEventCount) ) continue;
+
+	for ( int ientry = entry; ientry < entry+4; ientry++ ) {
+	    Chain1->GetEntry(ientry);
+	    event_out = ev;
+	    dacinj_out = dacinj;
+	    roll_out = roll;
+	    chip_out = chip;
+
+	    for ( int sca = 0; sca < NSCA; sca++ ) {
+		timesamp_out[sca] = timesamp[sca];
+	    }
+	
+	    for ( int ch = 0; ch < NCH; ch ++ ) {
+		for ( int sca = 0; sca < NSCA; sca++ ) {
+		    hg_out[sca][ch] = hg[sca][ch];
+		    lg_out[sca][ch] = hg[sca][ch];
+		}
+		tot_slow_out[ch] = tot_slow[ch];
+		tot_fast_out[ch] = tot_fast[ch];
+		toa_rise_out[ch] = toa_rise[ch];
+		toa_fall_out[ch] = toa_fall[ch];
+	    }
+	    outT->Fill();
+	}
+	ev++;
+	goodEventCount++;
+    }
+    
+    // Output 
     output_gainFactor();
 
     outT->Write();
@@ -213,13 +239,21 @@ void ntuplizer::init_outputFile() {
 
 void ntuplizer::init_outputBranch() {
 
+    cdtree = outfile->mkdir("treeproducer");
+    cdtree->cd();
 
-    outT->Branch("hg", hg_out, "hg[256]/D");
-    outT->Branch("lg", lg_out, "lg[256]/D");
-    outT->Branch("tot", tot_out, "tot[256]/D");
-    outT->Branch("mip", mip_out, "mip[256]/D");
-    //outT->Branch("dac" &dac_out, "dac");
-    
+    // initialize root branch
+    outT->Branch("event",&event_out, "event/I");
+    outT->Branch("chip",&chip_out, "chip/I");
+    outT->Branch("roll",&roll_out, "roll/I");
+    outT->Branch("dacinj",&dacinj_out, "dacinj/I");
+    outT->Branch("timesamp",timesamp_out, "timesamp[13]/I");
+    outT->Branch("hg",hg_out, "hg[13][64]/I");
+    outT->Branch("lg",lg_out, "lg[13][64]/I");
+    outT->Branch("tot_fast",tot_fast_out, "tot_fast[64]/I");
+    outT->Branch("tot_slow",tot_slow_out, "tot_slow[64]/I");
+    outT->Branch("toa_rise",toa_rise_out, "toa_rise[64]/I");
+    outT->Branch("toa_fall",toa_fall_out, "toa_fall[64]/I");
 }
 
 void ntuplizer::init_rootBranch() {
@@ -322,7 +356,7 @@ void ntuplizer::init_analysisParameter(){
 	toaf_r_allCh[i]    = new double[Nevents];
     }
     goodEventCount = 0;
-   
+    
 }
 
 
@@ -331,7 +365,7 @@ void ntuplizer::init_analysisParameter(){
 ///
 void ntuplizer::Pedestal_CM_Subtractor(){
 	
-    for (int ich = 0; ich < NCHANNEL; ich+=2){
+    for (int ich = 0; ich < NCH; ich+=2){
 	for (int sca = 0; sca < NSCA; sca++){
 	    hg_sig[ich][sca] -= avg_HG[chip][ich][sca];  // Pedestal Subtraction
 	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
@@ -342,7 +376,7 @@ void ntuplizer::Pedestal_CM_Subtractor(){
     hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
     lgCM_sca = CMCalculator_v2( lg_sig, chip );
     
-    for (int ich = 0; ich < NCHANNEL; ich+=2){
+    for (int ich = 0; ich < NCH; ich+=2){
 	for (int sca = 0; sca < NSCA; sca++){
 	    hg_sig[ich][sca] -= hgCM_sca[sca]; // CM subtraction
 	    lg_sig[ich][sca] -= lgCM_sca[sca];
@@ -631,7 +665,7 @@ void ntuplizer::injectionPlots(){
 
     char pltTit[100];
     string Xtit, Ytit, Opt;
-    int MkSty, MkClr, LClr, fitmin, fitmax;
+    int MkSty,MkClr, LClr, fitmin, fitmax;
     bool Stat, Wait, SavePlot;
 
     TGraph** gh = new TGraph*[NCHIP];
@@ -667,20 +701,20 @@ void ntuplizer::injectionPlots(){
 	TOTOffSet[ichip][injCh] = Linear_fit_tot->GetParameter(0);
 	
 	sprintf(pltTit,"HG_Chip%d",ichip);
-	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 0);
 
 	sprintf(pltTit,"LG_Chip%d",ichip);
-	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 0);
 
 	sprintf(pltTit,"TOT_Chip%d",ichip);
-	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 0);
 	
     }
 
 }
 
 double ntuplizer::findFitEdge(TF1 *Linear_fit, vector<double> x, vector<double> y){
-    int i = 2;
+    int i = 5;
     while ( i < x.size() ) {
 	int deviation = abs(y.at(i) - Linear_fit->Eval(x.at(i)));
 	if ( deviation > 100 ) break;
