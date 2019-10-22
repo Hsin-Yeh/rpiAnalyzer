@@ -77,7 +77,7 @@ void ntuplizer::ntupleProducer() {
       
 	if ( chip != 3 ) continue;
 	
-	if ( totFireCheck(MaxTS_sca) == false ) continue;
+	//if ( totFireCheck(MaxTS_sca) == false ) continue;
 	for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	    int inj_channel = ichip*64 + injCh;
 	    hg_injCh[ichip].push_back( hg_sig[inj_channel][MaxTS_sca] );
@@ -108,6 +108,7 @@ void ntuplizer::ntupleProducer() {
     /// End First Loop ///
 
     injectionPlots();
+    /*
     for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	hg_injCh[ichip].clear();
 	lg_injCh[ichip].clear();
@@ -198,7 +199,7 @@ void ntuplizer::ntupleProducer() {
 	ev++;
 	goodEventCount++;
     }
-    
+    */
     // Output 
     output_gainFactor();
 
@@ -636,7 +637,7 @@ void ntuplizer::output_gainFactor() {
 }
 
 void ntuplizer::readNsort_gainFactor() {
-    
+     
     int ichip, ich;
     string line;
     ifstream ifile;
@@ -668,11 +669,11 @@ void ntuplizer::injectionPlots(){
     int MkSty,MkClr, LClr, fitmin, fitmax;
     bool Stat, Wait, SavePlot;
 
-    TGraph** gh = new TGraph*[NCHIP];
-    TGraph** gl = new TGraph*[NCHIP];
-    TGraph** gtot = new TGraph*[NCHIP];
-    TGraph** LG2HG = new TGraph*[NCHIP];
-    TGraph** TOT2LG = new TGraph*[NCHIP];
+    TGraph* gh[NCHIP];
+    TGraph* gl[NCHIP];
+    TGraph* gtot[NCHIP];
+    TGraph* LG2HG[NCHIP];
+    TGraph* TOT2LG[NCHIP];
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
 
@@ -699,16 +700,17 @@ void ntuplizer::injectionPlots(){
 	LG2DAC[ichip][injCh] = 1 / Linear_fit_lg->GetParameter(1);
 	TOT2DAC[ichip][injCh] = 1 / Linear_fit_tot->GetParameter(1);
 	TOTOffSet[ichip][injCh] = Linear_fit_tot->GetParameter(0);
-	
+	/*
+	Wait = 0;
 	sprintf(pltTit,"HG_Chip%d",ichip);
-	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait, SavePlot = 0);
 
 	sprintf(pltTit,"LG_Chip%d",ichip);
-	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
+	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait, SavePlot = 0);
 
 	sprintf(pltTit,"TOT_Chip%d",ichip);
-	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
-	
+	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait, SavePlot = 0);
+	*/
     }
 
 }

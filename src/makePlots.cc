@@ -337,8 +337,8 @@ void makePlots::sweepPlotter(){
     if(oneChannelInjection_flag) { oneChannelInjection_injectionPlots(); }    // hglgtot, mip, xtalk_ring VS dac_ctrl
     else { injectionPlots(); }
     injectionPlots_allCh(); // collect hglgtot plots for all channel 
-    Pedestal_poly();    // pedestal 2d poly
-    Xtalk_1D();
+    //Pedestal_poly();    // pedestal 2d poly
+    //Xtalk_1D();
     XTalk_poly();      // XTalk 2d poly
     toa_plot();
 
