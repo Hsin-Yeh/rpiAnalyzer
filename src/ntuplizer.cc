@@ -34,7 +34,7 @@ void ntuplizer::Init(string pedfile, string gainfile, string noisyfile ) {
     init_analysisParameter(); // always after init_rootBranch();
     
     // init Canvas 
-    //gROOT->SetBatch("kTRUE");
+    gROOT->SetBatch("kTRUE");
     app = new TApplication("app",0,0);
     c = new TCanvas();
     cout << "----------Init complete----------" << endl << endl;
@@ -701,13 +701,13 @@ void ntuplizer::injectionPlots(){
 	TOTOffSet[ichip][injCh] = Linear_fit_tot->GetParameter(0);
 	
 	sprintf(pltTit,"HG_Chip%d",ichip);
-	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 0);
+	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
 
 	sprintf(pltTit,"LG_Chip%d",ichip);
-	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 0);
+	P->GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
 
 	sprintf(pltTit,"TOT_Chip%d",ichip);
-	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 0);
+	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 0, SavePlot = 0);
 	
     }
 
