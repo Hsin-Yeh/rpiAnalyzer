@@ -1,3 +1,4 @@
+
 #include "ntuplizer.h"
 #include "PlotSetting.h"
 #include <iostream>
@@ -45,7 +46,13 @@ void ntuplizer::Init(string pedfile, string gainfile, string noisyfile ) {
 
 
 void ntuplizer::ntupleProducer() {
-    
+
+    double* hgCheck;
+    double* lgCheck;
+    double* totCheck;
+    hgCheck  = new double[NCHIP];
+    lgCheck  = new double[NCHIP];
+    totCheck = new double[NCHIP];
 
     for(int entry = 0; entry < TotalEntries ; ++entry) {
 
@@ -66,24 +73,24 @@ void ntuplizer::ntupleProducer() {
 	/// Passing hg, lg to self define array
 	for (int ich = 0; ich < NCH; ich++){
 	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ chip*64 + ich ][sca] = hg[sca][ich];
-		lg_sig[ chip*64 + ich ][sca] = lg[sca][ich];
+		hg_sig[ich][sca] = hg[sca][ich];
+		lg_sig[ich][sca] = lg[sca][ich];
 	    }
-	    tot_sig[ chip*64 + ich ] = tot_slow[ich];
 	}
 
 	if(subPed_flag) { Pedestal_CM_Subtractor(); } // Ped & CM Subtraction
+	hgCheck[chip]  = hg_sig[injCh][MaxTS_sca];
+	lgCheck[chip]  = lg_sig[injCh][MaxTS_sca];
+	totCheck[chip] = tot_slow[injCh];
 
-      
 	if ( chip != 3 ) continue;
+	if ( totFireCheck(lgCheck, totCheck) == false ) continue;
 	
-	//if ( totFireCheck(MaxTS_sca) == false ) continue;
 	for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
-	    int inj_channel = ichip*64 + injCh;
-	    hg_injCh[ichip].push_back( hg_sig[inj_channel][MaxTS_sca] );
-	    lg_injCh[ichip].push_back( lg_sig[inj_channel][MaxTS_sca] );
+	    hg_injCh[ichip].push_back( hgCheck[ichip] );
+	    lg_injCh[ichip].push_back( lgCheck[ichip] );
 	    //cout << event << " " << ichip << " " << hg_sig[inj_channel][MaxTS_sca] << " " << lg_sig[inj_channel][MaxTS_sca] << endl;
-	    tot_injCh[ichip].push_back( tot_sig[inj_channel] );
+	    tot_injCh[ichip].push_back( totCheck[ichip] );
 	}
 	dac_ctrl.push_back( dacinj );
 	goodEventCount++;
@@ -199,13 +206,14 @@ void ntuplizer::ntupleProducer() {
 	ev++;
 	goodEventCount++;
     }
-    */
+
     // Output 
-    output_gainFactor();
+
 
     outT->Write();
     outfile->Write();
-    
+    */
+    output_gainFactor();
 }
 
 
@@ -335,16 +343,16 @@ void ntuplizer::init_rootBranch() {
 
 void ntuplizer::init_analysisParameter(){
 
-    hg_sig = new double*[NCHANNEL];
-    lg_sig = new double*[NCHANNEL];
-    tot_sig = new double[NCHANNEL];
+    hg_sig = new double*[NCH];
+    lg_sig = new double*[NCH];
+    tot_sig = new double[NCH];
     hg_allCh        = new double*[NCHANNEL];
     lg_allCh        = new double*[NCHANNEL];
     tot_allCh       = new double*[NCHANNEL];
     toaf_allCh      = new double*[NCHANNEL];
     toar_allCh      = new double*[NCHANNEL];
     toaf_r_allCh    = new double*[NCHANNEL];
-    for ( int ich = 0; ich < NCHANNEL; ich++ ) {
+    for ( int ich = 0; ich < NCH; ich++ ) {
 	hg_sig[ich] = new double[NSCA];
 	lg_sig[ich] = new double[NSCA];
     }
@@ -356,7 +364,35 @@ void ntuplizer::init_analysisParameter(){
 	toar_allCh[i]      = new double[Nevents];
 	toaf_r_allCh[i]    = new double[Nevents];
     }
+
+    LG2DAC    = new double*[NCHIP];
+    TOT2DAC   = new double*[NCHIP];
+    HGTP      = new double*[NCHIP];
+    LGTP      = new double*[NCHIP];
+    TOTOffSet = new double*[NCHIP];
+    HG2DAC    = new double*[NCHIP];
+    for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
+	LG2DAC[ichip]    = new double[NCH];
+	TOT2DAC[ichip]   = new double[NCH];
+	HGTP[ichip]      = new double[NCH];
+	LGTP[ichip]      = new double[NCH];
+	TOTOffSet[ichip] = new double[NCH];
+	HG2DAC[ichip]    = new double[NCH];
+    }
+
+    for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
+	for ( int ich = 0; ich < NCH; ich++ ) {
+	    LG2DAC[ichip][ich]    = 0;
+	    TOT2DAC[ichip][ich]   = 0;
+	    HGTP[ichip][ich]      = 0;
+	    LGTP[ichip][ich]      = 0;
+	    TOTOffSet[ichip][ich] = 0;
+	    HG2DAC[ichip][ich]    = 0;
+	}
+    }
+    
     goodEventCount = 0;
+
     
 }
 
@@ -372,7 +408,7 @@ void ntuplizer::Pedestal_CM_Subtractor(){
 	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
 	}
     }
-
+/*
     double *hgCM_sca, *lgCM_sca;
     hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
     lgCM_sca = CMCalculator_v2( lg_sig, chip );
@@ -381,10 +417,9 @@ void ntuplizer::Pedestal_CM_Subtractor(){
 	for (int sca = 0; sca < NSCA; sca++){
 	    hg_sig[ich][sca] -= hgCM_sca[sca]; // CM subtraction
 	    lg_sig[ich][sca] -= lgCM_sca[sca];
-	    //cout << hg_sig[ich][sca] << endl;
 	}
     }
-
+*/
 }
 
 
@@ -393,15 +428,16 @@ void ntuplizer::Pedestal_CM_Subtractor(){
 ///
 double* ntuplizer::CMCalculator_v2 ( double **sig_subPed, int chip ) {
     // Calculate CM for each TS
-    static double meanChipPedestal[NSCA];
-
+    double* meanChipPedestal;
+    meanChipPedestal = new double[NSCA];
     int scaCount[NSCA];
+    
     for (int sca = 0; sca < NSCA; sca++) {
 	meanChipPedestal[sca] = 0;
 	scaCount[sca] = 0;
     }
 
-    for (int ich = 0; ich < NCHANNEL; ich+=2) {
+    for (int ich = 0; ich < NCH; ich+=2) {
 	int ichannel = ich + chip*NCH;
 	bool noisy_flag = false;
 		
@@ -594,20 +630,18 @@ void ntuplizer::yamlReader(){
 }
 
 
-bool ntuplizer::totFireCheck(int MaxTS_sca){
+bool ntuplizer::totFireCheck(double *lgCheck, double* totCheck){
 
     bool totFire_flag = true;
     if ( !oneChannelInjection_flag ) {
 	for ( int ichip = 0; ichip < NCHIP; ichip++ ){
-	    int inj_channel = ichip*NCH + injCh;
-	    if ( lg_sig[inj_channel][MaxTS_sca] > 500 && tot_sig[inj_channel] <= 4 ) {
+	    if ( lgCheck[ichip] > 500 && totCheck[ichip] <= 4 ) {
 		totFire_flag = false;
 	    }
 	}
     }
     else {
-	int inj_channel = injChip*NCH + injCh;
-	if ( lg_sig[inj_channel][MaxTS_sca] > 500 && tot_sig[inj_channel] <= 4 ) {
+	if ( lgCheck[injChip] > 500 && totCheck[injChip] <= 4 ) {
 	    totFire_flag = false;
 	}
     }
@@ -625,13 +659,14 @@ bool ntuplizer::totFireCheck_chip(int ichip, double lg, double tot){
 
 void ntuplizer::output_gainFactor() {
 
-    ofstream f;
+    std::ofstream f;
     sprintf(title,"gainfactor_%s.txt",moduleNumber.c_str());
-    f.open(title, ios::out | ios::app );
+    f.open(title, std::ios_base::app );
+    //f.open(title);
 
     for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
 	if ( oneChannelInjection_flag && ichip!=injChip ) continue;
-	f << ichip << " " << injCh << " " << HG2DAC[ichip][injCh] << " " << HGTP[ichip][injCh] << " "  << LG2DAC[ichip][injCh] << " " << LGTP[ichip][injCh] << " " << TOT2DAC[ichip][injCh] << " " << TOTOffSet[ichip][injCh] << endl;
+	f << ichip << " " << injCh << " " << HG2DAC[ichip][injCh] << " " << HGTP[ichip][injCh] << " "  << LG2DAC[ichip][injCh] << " " << LGTP[ichip][injCh] << " " << TOT2DAC[ichip][injCh] << " " << TOTOffSet[ichip][injCh] << std::endl;
     }
     
 }
@@ -684,6 +719,7 @@ void ntuplizer::injectionPlots(){
 	gh[ichip] = new TGraph( goodEventCount, &dac_ctrl[0], &hg_injCh[ichip][0]);
 	gl[ichip] = new TGraph( goodEventCount, &dac_ctrl[0], &lg_injCh[ichip][0]);
 	gtot[ichip] = new TGraph( goodEventCount, &dac_ctrl[0], &tot_injCh[ichip][0]);
+
 	gh[ichip]->Fit("pol1","Q ROB","",0, 100);
 	gl[ichip]->Fit("pol1","Q ROB","",0, 500);
 	gtot[ichip]->Fit("pol1","Q ROB","",500, 3000);
@@ -693,6 +729,7 @@ void ntuplizer::injectionPlots(){
 	Linear_fit_hg = gh[ichip]->GetFunction("pol1");
 	Linear_fit_lg = gl[ichip]->GetFunction("pol1");
 	Linear_fit_tot = gtot[ichip]->GetFunction("pol1");
+
 	HGTP[ichip][injCh] = findFitEdge(Linear_fit_hg, dac_ctrl, hg_injCh[ichip] );
 	LGTP[ichip][injCh] = findFitEdge(Linear_fit_lg, dac_ctrl, lg_injCh[ichip] );
 
@@ -700,7 +737,7 @@ void ntuplizer::injectionPlots(){
 	LG2DAC[ichip][injCh] = 1 / Linear_fit_lg->GetParameter(1);
 	TOT2DAC[ichip][injCh] = 1 / Linear_fit_tot->GetParameter(1);
 	TOTOffSet[ichip][injCh] = Linear_fit_tot->GetParameter(0);
-	/*
+
 	Wait = 0;
 	sprintf(pltTit,"HG_Chip%d",ichip);
 	P->GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait, SavePlot = 0);
@@ -710,20 +747,22 @@ void ntuplizer::injectionPlots(){
 
 	sprintf(pltTit,"TOT_Chip%d",ichip);
 	P->GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait, SavePlot = 0);
-	*/
-    }
 
+    }
+    
 }
 
 double ntuplizer::findFitEdge(TF1 *Linear_fit, vector<double> x, vector<double> y){
     int i = 5;
-    while ( i < x.size() ) {
+    while ( i < x.size()-1 ) {
 	int deviation = abs(y.at(i) - Linear_fit->Eval(x.at(i)));
-	if ( deviation > 100 ) break;
-	
+	if ( deviation > 100 && y.at(i) > 0 ) break;
 	i++;
     }
-    return y.at(i);
+    if ( y.at(i) > 2000 )
+	return 2000;
+    else
+	return y.at(i);
 }
 
 

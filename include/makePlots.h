@@ -169,6 +169,7 @@ private:
 
     //noisy parameter
     vector<int> noisyChannel;
+    bool noisy_flag[NCHANNEL];
 
     //analysis parameter
     double XTalkCoupling_Ring_1Chip_average;

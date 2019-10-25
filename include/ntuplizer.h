@@ -62,7 +62,7 @@ private:
     double  CMCalculator( double **sig_SubPed, int *TS );
     double* CMCalculator_v2(double **sig_SubPed, int chip );
     void    Pedestal_CM_Subtractor();
-    bool    totFireCheck(int MaxTS_sca);
+    bool    totFireCheck(double *lgCheck, double *totCheck);
     bool    totFireCheck_chip(int chip, double lg, double tot);
     void    injectionPlots();
     double  findFitEdge(TF1 *Linear_fit, vector<double> x, vector<double> y);
@@ -106,12 +106,12 @@ private:
 
 
     //gainFactor parameter
-    double LG2DAC[NCHIP][NCH];
-    double TOT2DAC[NCHIP][NCH];
-    double HGTP[NCHIP][NCH];
-    double LGTP[NCHIP][NCH];
-    double TOTOffSet[NCHIP][NCH];
-    double HG2DAC[NCHIP][NCH];
+    double **LG2DAC;
+    double **TOT2DAC;
+    double **HGTP;
+    double **LGTP;
+    double **TOTOffSet;
+    double **HG2DAC;
     double LGTP_default = 900;
 
     //noisy parameter

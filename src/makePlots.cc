@@ -275,8 +275,7 @@ void makePlots::sweepPlotter(){
 		/// Calulate goodEventCount ring Energy
 		int iring;
 		iring = ringPositionFinder( inj_channel, ichannel );
-		if( iring > -1 ) {
-		    
+		if( iring > -1 && !noisy_flag[ichannel] ) {
 		    if ( oneChannelInjection_flag ) {
 			mip_Ring_1Chip[iring][goodEventCount] += mip_allCh[ichannel][goodEventCount];
 			if ( iring == 1 && goodEventCount == 1 ) 
@@ -290,7 +289,7 @@ void makePlots::sweepPlotter(){
 	    /// Calculate XTalkCoupling for FirstRing
 	    if ( oneChannelInjection_flag ) {
 		for(int iring = 1; iring < NRings; iring++) {
-		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / mip_Ring_1Chip[0][goodEventCount];
+		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_Ring_1Chip[0][goodEventCount] * ringChannelCount ) ;
 		}
 		if( event>200 && event<=700 ) {
 		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][goodEventCount];
@@ -337,7 +336,7 @@ void makePlots::sweepPlotter(){
     if(oneChannelInjection_flag) { oneChannelInjection_injectionPlots(); }    // hglgtot, mip, xtalk_ring VS dac_ctrl
     else { injectionPlots(); }
     injectionPlots_allCh(); // collect hglgtot plots for all channel 
-    //Pedestal_poly();    // pedestal 2d poly
+    //Pedestal_poly();    // pedestal 2rd poly
     //Xtalk_1D();
     XTalk_poly();      // XTalk 2d poly
     toa_plot();
@@ -579,7 +578,9 @@ void makePlots::Pulse_display( int displayChannel, int pulseDisplay_type, int lo
 	Chain1 -> GetEntry(ev);
 	if( event < startEv ) continue;
 	int TS[NSCA];
-	for(int i = 0 ; i < NSCA ; ++i)  TS[i] = timesamp[i];
+	for(int i = 0 ; i < NSCA ; ++i)  {
+	    TS[i] = timesamp[i];
+	}
 
 	/// Passing hg lg signal to self defined array
 	for (int ich = 0; ich < NCH; ich++){
@@ -836,6 +837,8 @@ void makePlots::GainFactorReader( string gainfile ){
 	    */
 	    GainFile >> ichip >> ich;
 	    GainFile >> HG2DAC[ichip][ich] >> HGTP[ichip][ich] >> LG2DAC[ichip][ich] >> LGTP[ichip][ich] >> TOT2DAC[ichip][ich] >> TOTOffSet[ichip][ich];
+	    HGTP[ichip][ich] = 1500;
+	    //LGTP[ichip][ich] = 900;
 	}
     }
     cout << endl;
@@ -847,6 +850,9 @@ void makePlots::noisyChannelReader( string noisyFileName ) {
     ifstream noisyFile( noisyFileName );
     string line;
     int ichip, ich;
+    for ( int ichannel = 0; ichannel < NCHANNEL; ichannel++ ) {
+	noisy_flag[ichannel] = false;
+    }
     if(!noisyFile.is_open()){
 	cout << "Did not find noisyChannelFile " << noisyFileName
 	     << ".\n not setting noisyChannels " << endl;
@@ -857,6 +863,7 @@ void makePlots::noisyChannelReader( string noisyFileName ) {
 	    noisyFile >> ichip >> ich;
 	    int ichannel = ichip*NCH + ich;
 	    noisyChannel.push_back(ichannel);
+	    noisy_flag[ichannel] = true;
 	}
 	noisyChannel.pop_back();
     }
@@ -873,26 +880,24 @@ void makePlots::noisyChannelReader( string noisyFileName ) {
 ///
 void makePlots::Pedestal_CM_Subtractor( int chip ){
 	
-    for (int ich = 0; ich < NCH; ich++){
+    for (int ich = 0; ich < NCH; ich+=2){
 	for (int sca = 0; sca < NSCA; sca++){
 	    hg_sig[ich][sca] -= avg_HG[chip][ich][sca];  // Pedestal Subtraction
 	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
 	}
     }
-
-    double *hgCM_sca, *lgCM_sca;
-    hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
-    lgCM_sca = CMCalculator_v2( lg_sig, chip );
+/*    
+    double *hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
+    double *lgCM_sca = CMCalculator_v2( lg_sig, chip );
 	
 
     for (int ich = 0; ich < NCH; ich++){
 	for (int sca = 0; sca < NSCA; sca++){
 	    hg_sig[ich][sca] -= hgCM_sca[sca]; // CM subtraction
 	    lg_sig[ich][sca] -= lgCM_sca[sca];
-	    //cout << hg_sig[ich][sca] << endl;
 	}
     }
-
+*/
 }
 
 ///
@@ -900,9 +905,10 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 ///
 double* makePlots::CMCalculator_v2 ( double **sig_subPed, int chip ) {
     // Calculate CM for each TS
-    static double meanChipPedestal[NSCA];
-
+    double* meanChipPedestal;
+    meanChipPedestal = new double[NSCA];
     int scaCount[NSCA];
+    
     for (int sca = 0; sca < NSCA; sca++) {
 	meanChipPedestal[sca] = 0;
 	scaCount[sca] = 0;
@@ -910,13 +916,8 @@ double* makePlots::CMCalculator_v2 ( double **sig_subPed, int chip ) {
 
     for (int ich = 0; ich < NCH; ich+=2) {
 	int ichannel = ich + chip*NCH;
-	bool noisy_flag = false;
-		
-	// Determine if the channel is a noisy channel
-	for(int i = 0; i < noisyChannel.size(); i++){
-	    if ( ichannel == noisyChannel.at(i) ) { noisy_flag = true; }
-	}
-	if (noisy_flag) continue;
+	int inj_channel = injCh + injChip*NCH;
+	if (noisy_flag[ichannel]) continue;
 
 	// Calculate mean pedestal for each sca 
 	for (int sca = 0; sca < NSCA; sca++) {
@@ -986,7 +987,7 @@ bool makePlots::mipSigCheck( double *sig, int *TS ) {
 ///
 void makePlots::pulsePlotter( double *sig, int *TS, int ev, int ichip, int ich, int lowerR, int upperR ) {
 
-    gROOT->SetBatch("kFALSE");
+    //gROOT->SetBatch("kFALSE");
 	
     // This function plots the input 13 timesamples and show it on the screen 
     double double_TS[NSCA];
@@ -1059,7 +1060,6 @@ void makePlots::read_P_and_N(string ped_file){
 		}
 	    }
 	}
-
     
 	cout << "Reading pedestal file done!" << endl << endl;
 	inHG.close();
@@ -1820,7 +1820,7 @@ void makePlots::injectionPlots(){
 	    gXTalkCoupling->SetMarkerColor(P.Color(ichip));
 	    gXTalkCoupling->SetLineWidth(0);
 	    gXTalkCoupling->SetFillColor(0);
-	    TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
+	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
 	    gXTalkCoupling->Fit("f1","R");
 	    fit_intersept = f1->GetParameter(0);
 	    fit_slope = f1->GetParameter(1);
@@ -1894,7 +1894,7 @@ void makePlots::oneChannelInjection_injectionPlots(){
 	gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
 	gXTalkCoupling->SetLineWidth(0);
 	gXTalkCoupling->SetFillColor(0);
-	TF1 *f1 = new TF1("f1","[0]+[1]*x",500,3500);
+	TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
 	gXTalkCoupling->Fit("f1","R");
 	fit_intersept = f1->GetParameter(0);
 	fit_slope = f1->GetParameter(1);
@@ -2013,9 +2013,11 @@ void makePlots::injectionPlots_allCh() {
 	    gXTalkCoupling->SetMarkerColor(P.Color(color));
 	    gXTalkCoupling->SetLineColor(P.Color(color));
 	    gXTalkCoupling->SetFillColor(0);
+	    gXTalkCoupling->SetMinimum(-0.01);
+	    gXTalkCoupling->SetMaximum(0.05);
 	    multig->Add(gXTalkCoupling);
-	    TF1 *f1 = new TF1("f1","[0]+[1]*x",450,800);
-	    gXTalkCoupling->Fit("f1","R");
+	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
+	    gXTalkCoupling->Fit("f1","ROB R");
 	    fit_intersept = f1->GetParameter(0);
 	    fit_slope = f1->GetParameter(1);
 	    output_xtalkCoupling_all(false , false, ichannel);
@@ -2032,7 +2034,8 @@ void makePlots::injectionPlots_allCh() {
     multig->Draw("AP");
     multig->GetXaxis()->SetTitle("Injected Charge [DAC]");
     multig->GetYaxis()->SetTitle("E / EInj");
-    multig->GetYaxis()->SetRangeUser(-0.01, 0.1);
+    multig->SetMinimum(-0.01);
+    multig->SetMaximum(0.05);
     multig->Write();
     c->Update();
     sprintf(title,"%s/xtalk_firstRing_seperate_InjCh%d_InjChip%d.png",plot_dir, injCh, injChip);
