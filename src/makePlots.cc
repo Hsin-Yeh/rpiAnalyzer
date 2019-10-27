@@ -1893,7 +1893,7 @@ void makePlots::oneChannelInjection_injectionPlots(){
 	gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
 	gXTalkCoupling->SetLineWidth(0);
 	gXTalkCoupling->SetFillColor(0);
-	TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
+	TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2200);
 	gXTalkCoupling->Fit("f1","R");
 	fit_intersept = f1->GetParameter(0);
 	fit_slope = f1->GetParameter(1);
@@ -2015,7 +2015,7 @@ void makePlots::injectionPlots_allCh() {
 	    gXTalkCoupling->SetMinimum(-0.01);
 	    gXTalkCoupling->SetMaximum(0.05);
 	    multig->Add(gXTalkCoupling);
-	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
+	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2200);
 	    gXTalkCoupling->Fit("f1","ROB R");
 	    fit_intersept = f1->GetParameter(0);
 	    fit_slope = f1->GetParameter(1);
