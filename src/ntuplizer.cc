@@ -1,4 +1,3 @@
-
 #include "ntuplizer.h"
 #include "PlotSetting.h"
 #include <iostream>

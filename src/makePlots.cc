@@ -285,11 +285,10 @@ void makePlots::sweepPlotter(){
 			mip_Ring_4Chip[iring][ichip][goodEventCount] += mip_allCh[ichannel][goodEventCount];
 		}
 	    }
-	    
 	    /// Calculate XTalkCoupling for FirstRing
 	    if ( oneChannelInjection_flag ) {
 		for(int iring = 1; iring < NRings; iring++) {
-		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_Ring_1Chip[0][goodEventCount] * ringChannelCount ) ;
+		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_allCh[ (injChip*NCH) + injCh ][goodEventCount] * ringChannelCount ) ;
 		}
 		if( event>200 && event<=700 ) {
 		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][goodEventCount];
@@ -828,7 +827,7 @@ void makePlots::GainFactorReader( string gainfile ){
   
     if(GainFile.is_open()){
 	cout << "gainFile = " << gainfile << endl;
-	getline(GainFile,line);
+	//getline(GainFile,line);
 	while(!GainFile.eof()){
 	    /*
 	    GainFile >> tmp >> tmp >> ichip >> ich >> tmp;
@@ -838,7 +837,7 @@ void makePlots::GainFactorReader( string gainfile ){
 	    GainFile >> ichip >> ich;
 	    GainFile >> HG2DAC[ichip][ich] >> HGTP[ichip][ich] >> LG2DAC[ichip][ich] >> LGTP[ichip][ich] >> TOT2DAC[ichip][ich] >> TOTOffSet[ichip][ich];
 	    HGTP[ichip][ich] = 1500;
-	    //LGTP[ichip][ich] = 900;
+	    LGTP[ichip][ich] = 900;
 	}
     }
     cout << endl;
@@ -2009,7 +2008,7 @@ void makePlots::injectionPlots_allCh() {
 	
 	
 	int iring = ringPositionFinder( inj_channel, ichannel );
-	if (iring ==  1) {
+	if (iring ==  1 && !noisy_flag[ichannel] ) {
 	    gXTalkCoupling->SetMarkerColor(P.Color(color));
 	    gXTalkCoupling->SetLineColor(P.Color(color));
 	    gXTalkCoupling->SetFillColor(0);
