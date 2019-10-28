@@ -885,7 +885,7 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
 	}
     }
-/*    
+
     double *hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
     double *lgCM_sca = CMCalculator_v2( lg_sig, chip );
 	
@@ -896,7 +896,7 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 	    lg_sig[ich][sca] -= lgCM_sca[sca];
 	}
     }
-*/
+
 }
 
 ///
