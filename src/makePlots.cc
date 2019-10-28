@@ -327,7 +327,7 @@ void makePlots::sweepPlotter(){
     }
 
     /// Fit
-    fit_pedestalHisto();
+    //fit_pedestalHisto();
     
     ///
     /// Plots!!!!!
@@ -340,8 +340,8 @@ void makePlots::sweepPlotter(){
     injectionPlots_allCh(); // collect hglgtot plots for all channel 
     //Pedestal_poly();    // pedestal 2rd poly
     //Xtalk_1D();
-    XTalk_poly();      // XTalk 2d poly
-    toa_plot();
+    //XTalk_poly();      // XTalk 2d poly
+    //toa_plot();
 
     outfile->Write();
     outfile->Close();
