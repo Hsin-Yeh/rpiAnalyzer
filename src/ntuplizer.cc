@@ -491,7 +491,7 @@ double ntuplizer::CMCalculator( double **sig_subPed, int *TS ) {
 void ntuplizer::read_P_and_N(string ped_file){
 
     int end = input_fileName.find("ana_output");
-    string pedPath = input_fileName.substr(0,end-1);
+    string pedPath = input_fileName.substr(0,end+10);
     char pedFileName[100];
     sprintf(pedFileName,"%s/pedestal",pedPath.c_str());
 

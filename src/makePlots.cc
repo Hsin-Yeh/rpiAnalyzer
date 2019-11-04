@@ -1011,7 +1011,7 @@ void makePlots::pulsePlotter( double *sig, int *TS, int ev, int ichip, int ich, 
 void makePlots::read_P_and_N(string ped_file){
 
     int end = input_fileName.find("ana_output");
-    string pedPath = input_fileName.substr(0,end-1);
+    string pedPath = input_fileName.substr(0,end+11);
     char pedFileName[100];
     sprintf(pedFileName,"%s/pedestal",pedPath.c_str());
 
