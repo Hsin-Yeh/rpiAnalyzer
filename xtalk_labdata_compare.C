@@ -48,7 +48,8 @@ void xtalk_labdata_compare() {
 
     readmap();
     ifstream infile;
-    infile.open("xtalkCoupling_124oneChannelInjection.txt");
+    infile.open("xtalkCoupling_88oneChannelInjection.txt");
+    
 
     int chip, ch, pad;
     double xtalk_average[128], xtalk_intersect[128], xtalk_slope[128];
