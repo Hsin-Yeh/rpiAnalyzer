@@ -301,7 +301,7 @@ void makePlots::sweepPlotter(){
 	    else {
 		for(int ichip = 0; ichip < NCHIP; ichip++){
 		    for(int iring = 1; iring < NRings; iring++) {
-			XTalkCoupling_Ring_4Chip[iring][ichip][goodEventCount] = mip_Ring_4Chip[iring][ichip][goodEventCount] / mip_Ring_4Chip[0][ichip][goodEventCount];
+			XTalkCoupling_Ring_4Chip[iring][ichip][goodEventCount] = mip_Ring_4Chip[iring][ichip][goodEventCount] / ( mip_allCh[ (ichip*NCH) + injCh ][goodEventCount] * 6 );
 		    }
 		}
 	    }
@@ -337,10 +337,10 @@ void makePlots::sweepPlotter(){
 	output_xtalkCoupling();
     }    // hglgtot, mip, xtalk_ring VS dac_ctrl
     else { injectionPlots(); }
-    injectionPlots_allCh(); // collect hglgtot plots for all channel 
+    //injectionPlots_allCh(); // collect hglgtot plots for all channel 
     //Pedestal_poly();    // pedestal 2rd poly
     //Xtalk_1D();
-    //XTalk_poly();      // XTalk 2d poly
+    XTalk_poly();      // XTalk 2d poly
     //toa_plot();
 
     outfile->Write();
@@ -883,7 +883,7 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
 	}
     }
-/*
+
     double *hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
     double *lgCM_sca = CMCalculator_v2( lg_sig, chip );
 	
@@ -894,7 +894,7 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 	    lg_sig[ich][sca] -= lgCM_sca[sca];
 	}
     }
-*/
+
 }
 
 ///
@@ -1819,6 +1819,7 @@ void makePlots::injectionPlots(){
 	    gXTalkCoupling->SetFillColor(0);
 	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
 	    gXTalkCoupling->Fit("f1","R");
+	    gXTalkCoupling->Write();
 	    fit_intersept = f1->GetParameter(0);
 	    fit_slope = f1->GetParameter(1);
 	    multig_XTalkCoupling_ring->Add(gXTalkCoupling);
