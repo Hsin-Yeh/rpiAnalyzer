@@ -251,7 +251,7 @@ void makePlots::sweepPlotter(){
 
 	/// Injection XTalk calculation
 	if ( chip == 3 ) {
-	    //if ( totFireCheck(event) == false ) continue;
+	    if ( totFireCheck(event) == false ) continue;
 	    
 	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
 		int ichip = ichannel / NCH;
@@ -337,7 +337,7 @@ void makePlots::sweepPlotter(){
 	output_xtalkCoupling();
     }    // hglgtot, mip, xtalk_ring VS dac_ctrl
     else { injectionPlots(); }
-    //injectionPlots_allCh(); // collect hglgtot plots for all channel 
+    injectionPlots_allCh(); // collect hglgtot plots for all channel 
     //Pedestal_poly();    // pedestal 2rd poly
     //Xtalk_1D();
     XTalk_poly();      // XTalk 2d poly
@@ -883,7 +883,7 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
 	}
     }
-
+/*
     double *hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
     double *lgCM_sca = CMCalculator_v2( lg_sig, chip );
 	
@@ -894,7 +894,7 @@ void makePlots::Pedestal_CM_Subtractor( int chip ){
 	    lg_sig[ich][sca] -= lgCM_sca[sca];
 	}
     }
-
+*/
 }
 
 ///
@@ -2014,7 +2014,7 @@ void makePlots::injectionPlots_allCh() {
 	    gXTalkCoupling->SetMinimum(-0.01);
 	    gXTalkCoupling->SetMaximum(0.05);
 	    multig->Add(gXTalkCoupling);
-	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2200);
+	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
 	    gXTalkCoupling->Fit("f1","ROB R");
 	    fit_intersept = f1->GetParameter(0);
 	    fit_slope = f1->GetParameter(1);
