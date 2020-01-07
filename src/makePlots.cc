@@ -1649,12 +1649,12 @@ void makePlots::fit_pedestalHisto() {
 	
 	for (int sca = 0; sca < NSCA; sca++){
 	    if (ichannel%2 == 1) continue;
-	    h_hgPedestal[sca][ichannel]->Fit("gaus","Q");
+	    h_hgPedestal[sca][ichannel]->Fit("gaus","Q","",-100,100);
 	    hgFitMean [ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
 	    hgFitSigma[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
 	    hgFitChisquare[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetChisquare();
 	    
-	    h_lgPedestal[sca][ichannel]->Fit("gaus","Q");
+	    h_lgPedestal[sca][ichannel]->Fit("gaus","Q","",-100,100);
 	    lgFitMean [ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
 	    lgFitSigma[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
 	    lgFitChisquare[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetChisquare();
