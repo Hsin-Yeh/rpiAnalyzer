@@ -5,7 +5,7 @@
 #include <fstream>
 #include <math.h>
 #include "TFile.h"
-
+ 
 #include "TGraph.h"
 #include "TMultiGraph.h"
 #include "TSystem.h"
@@ -61,11 +61,11 @@ void makePlots::Init( string pedfile, string gainfile, string noisyfile, bool ba
         
     // init Canvas
     if ( batch_flag ) 
-	gROOT->SetBatch("kTRUE");
+        gROOT->SetBatch("kTRUE");
     
     app = new TApplication("app",0,0);
     c = new TCanvas();
-	
+
     cout << "----------Init complete----------" << endl << endl;
     
 }
@@ -82,66 +82,66 @@ void makePlots::pedestalPlotter(){
     /// --------------- Start of pedstalPlotter Loop --------------- ///
     for(int entry = 0; entry < TotalEntries ; ++entry) {
     
-	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
-	Chain1 -> GetEntry(entry);
-	Chain2 -> GetEntry(entry);
-	
-	// Timesample 
-	int TS[NSCA];
-	int TS0_sca, MaxTS_sca;
-	for(int sca = 0 ; sca < NSCA ; sca++) {
-	    TS[sca] = timesamp[sca];
-	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
-	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
-	}
+        if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
+        Chain1 -> GetEntry(entry);
+        Chain2 -> GetEntry(entry);
 
-	/// Passing hg, lg to self define array
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ich][sca] = hg[sca][ich];
-		lg_sig[ich][sca] = lg[sca][ich];
-	    }
-	}
-	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+        // Timesample
+        int TS[NSCA];
+        int TS0_sca, MaxTS_sca;
+        for(int sca = 0 ; sca < NSCA ; sca++) {
+            TS[sca] = timesamp[sca];
+            if (timesamp[sca] == 0) { TS0_sca = sca ; }
+            if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
+        }
+
+        /// Passing hg, lg to self define array
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                hg_sig[ich][sca] = hg[sca][ich];
+                lg_sig[ich][sca] = lg[sca][ich];
+            }
+        }
+        if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
 
 
-	// TOT & TOA Fire at pedestal Warning
-	for(int ich = 0; ich < NCH; ich++){
-	    if ( toa_fall[ich] > 4 || toa_rise[ich] > 4 || tot_slow[ich] > 4 ) {
-		cout << "!!!!!! TOA Fire at Pedestal Run !!!!!!!" << endl;
-		cout << "event: " << event << " chip: " << chip << " ch: " << ich << " "
-		     << tot_slow[ich] << " " << toa_rise[ich] << " " << toa_fall[ich] << endl;
-	    }
-	}
-	
+        // TOT & TOA Fire at pedestal Warning
+        for(int ich = 0; ich < NCH; ich++){
+            if ( toa_fall[ich] > 4 || toa_rise[ich] > 4 || tot_slow[ich] > 4 ) {
+                cout << "!!!!!! TOA Fire at Pedestal Run !!!!!!!" << endl;
+                cout << "event: " << event << " chip: " << chip << " ch: " << ich << " "
+                     << tot_slow[ich] << " " << toa_rise[ich] << " " << toa_fall[ich] << endl;
+            }
+        }
+
 #ifdef DEBUG
-	cout << "event: " << event << endl;
-	for (int ich = 0; ich < NCH; ich++){
-	    cout << "chip: " << chip << " ch: " << ich << " == ";
-	    for (int sca = 0; sca < NSCA; sca++){
-		cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
-	    }
-	    cout << endl;
-	}
-	for (int ich = 0; ich < NCH; ich++){
-	    cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
-		 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
-	}
+        cout << "event: " << event << endl;
+        for (int ich = 0; ich < NCH; ich++){
+            cout << "chip: " << chip << " ch: " << ich << " == ";
+            for (int sca = 0; sca < NSCA; sca++){
+                cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
+            }
+            cout << endl;
+        }
+        for (int ich = 0; ich < NCH; ich++){
+            cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
+                 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
+        }
 #endif
 
-	/// Fill Pedestal histograms
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		int ichannel = chip*64 + ich;
-		h_hgPedestal[sca][ichannel]->Fill( hg_sig[ich][sca] );
-		h_lgPedestal[sca][ichannel]->Fill( lg_sig[ich][sca] );
-		h_tot[ichannel]->Fill( tot_slow[ich] );
-		h_toarise[ichannel]->Fill( toa_rise[ich] );
-		h_toafall[ichannel]->Fill( toa_fall[ich] );
-		h_toaf_r[ichannel]->Fill( toa_fall[ich] - toa_rise[ich] );
-	    }
-	}
-	
+        /// Fill Pedestal histograms
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                int ichannel = chip*64 + ich;
+                h_hgPedestal[sca][ichannel]->Fill( hg_sig[ich][sca] );
+                h_lgPedestal[sca][ichannel]->Fill( lg_sig[ich][sca] );
+                h_tot[ichannel]->Fill( tot_slow[ich] );
+                h_toarise[ichannel]->Fill( toa_rise[ich] );
+                h_toafall[ichannel]->Fill( toa_fall[ich] );
+                h_toaf_r[ichannel]->Fill( toa_fall[ich] - toa_rise[ich] );
+            }
+        }
+
     }
 
     /// --------------- End of pedestalPlotter Loop --------------- ///
@@ -174,156 +174,156 @@ void makePlots::sweepPlotter(){
     /// --------------- Start Loop of sweepPlotter --------------- ///
     for(int entry = 0; entry < TotalEntries ; ++entry) {
 
-	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
-	Chain1 -> GetEntry(entry);
-	Chain2 -> GetEntry(entry);
-	dac_ctrl[event] = dacinj;
+        if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
+        Chain1 -> GetEntry(entry);
+        Chain2 -> GetEntry(entry);
+        dac_ctrl[event] = dacinj;
 
-	// Timesample 
-	int TS[NSCA];
-	int TS0_sca, MaxTS_sca;
-	for(int sca = 0 ; sca < NSCA ; sca++) {
-	    TS[sca] = timesamp[sca];
-	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
-	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
-	}
+        // Timesample
+        int TS[NSCA];
+        int TS0_sca, MaxTS_sca;
+        for(int sca = 0 ; sca < NSCA ; sca++) {
+            TS[sca] = timesamp[sca];
+            if (timesamp[sca] == 0) { TS0_sca = sca ; }
+            if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
+        }
 
-	/// Passing hg, lg to self define array
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ich][sca] = hg[sca][ich];
-		lg_sig[ich][sca] = lg[sca][ich];
-	    }
-	}
-	
-	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+        /// Passing hg, lg to self define array
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                hg_sig[ich][sca] = hg[sca][ich];
+                lg_sig[ich][sca] = lg[sca][ich];
+            }
+        }
+
+        if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
 
 
 #ifdef DEBUG
-	cout << "event: " << event << endl;
-	for (int ich = 0; ich < NCH; ich++){
-	    cout << "chip: " << chip << " ch: " << ich << " == ";
-	    for (int sca = 0; sca < NSCA; sca++){
-		cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
-	    }
-	    cout << endl;
-	}
-	for (int ich = 0; ich < NCH; ich++){
-	    cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
-		 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
-	}
+        cout << "event: " << event << endl;
+        for (int ich = 0; ich < NCH; ich++){
+            cout << "chip: " << chip << " ch: " << ich << " == ";
+            for (int sca = 0; sca < NSCA; sca++){
+                cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
+            }
+            cout << endl;
+        }
+        for (int ich = 0; ich < NCH; ich++){
+            cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
+                 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
+        }
 #endif
 
-	//getchar();
+        //getchar();
 
     
-	/// Pedestal histograms
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		int ichannel = chip*64 + ich;
-		h_hgPedestal[sca][ichannel]->Fill( hg_sig[ich][sca] );
-		h_lgPedestal[sca][ichannel]->Fill( lg_sig[ich][sca] );
-		h_tot[ichannel]->Fill( tot_slow[ich] );
-		h_toarise[ichannel]->Fill( toa_rise[ich] );
-		h_toafall[ichannel]->Fill( toa_fall[ich] );
-		h_toaf_r[ichannel]->Fill( toaf_r_allCh[ich][event] );
-	    }
-	}
+        /// Pedestal histograms
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                int ichannel = chip*64 + ich;
+                h_hgPedestal[sca][ichannel]->Fill( hg_sig[ich][sca] );
+                h_lgPedestal[sca][ichannel]->Fill( lg_sig[ich][sca] );
+                h_tot[ichannel]->Fill( tot_slow[ich] );
+                h_toarise[ichannel]->Fill( toa_rise[ich] );
+                h_toafall[ichannel]->Fill( toa_fall[ich] );
+                h_toaf_r[ichannel]->Fill( toaf_r_allCh[ich][event] );
+            }
+        }
 
-	/// Injection & Cross Talk Analysis
-	for(int ich = 0; ich < NCH; ich++){
-	    int channel      = ich + chip*64;
-	    double hg = hg_sig[ich][MaxTS_sca];
-	    double lg = lg_sig[ich][MaxTS_sca];
-	    double tot = tot_slow[ich];
-	 	    
-	    hg_allCh[channel][event]  = hg;
-	    lg_allCh[channel][event]  = lg;
-	    tot_allCh[channel][event] = tot;
-	    toaf_allCh[channel][event] = toa_fall[ich];
-	    toar_allCh[channel][event] = toa_rise[ich];
-	    toaf_r_allCh[channel][event] = toa_fall[ich] - toa_rise[ich];
-	    
-	    /// mip conversion
-	    double energy_mip = mipConverter( hg, lg, tot, channel );
-	    mip_allCh[channel][event] = energy_mip;
-	}
+        /// Injection & Cross Talk Analysis
+        for(int ich = 0; ich < NCH; ich++){
+            int channel      = ich + chip*64;
+            double hg = hg_sig[ich][MaxTS_sca];
+            double lg = lg_sig[ich][MaxTS_sca];
+            double tot = tot_slow[ich];
 
-	/// Injection XTalk calculation
-	if ( chip == 3 ) {
-	    if ( totFireCheck(event) == false ) continue;
-	    
-	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-		int ichip = ichannel / NCH;
-		int inj_channel;
-		if ( oneChannelInjection_flag )
-		    inj_channel = ( injChip * NCH ) + injCh;
-		else
-		    inj_channel = ( ichip * NCH ) + injCh;
+            hg_allCh[channel][event]  = hg;
+            lg_allCh[channel][event]  = lg;
+            tot_allCh[channel][event] = tot;
+            toaf_allCh[channel][event] = toa_fall[ich];
+            toar_allCh[channel][event] = toa_rise[ich];
+            toaf_r_allCh[channel][event] = toa_fall[ich] - toa_rise[ich];
 
-		mip_allCh_goodEvent[ichannel][goodEventCount] = mip_allCh[ichannel][event];
-		XTalkCoupling[ichannel][goodEventCount] = mip_allCh[ichannel][goodEventCount] / mip_allCh[inj_channel][goodEventCount];
-		if( goodEventCount>200 && goodEventCount<=700 ){
-		    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][goodEventCount];
-		    AverageEvents++;
-		}
+            /// mip conversion
+            double energy_mip = mipConverter( hg, lg, tot, channel );
+            mip_allCh[channel][event] = energy_mip;
+        }
+
+        /// Injection XTalk calculation
+        if ( chip == 3 ) {
+            if ( totFireCheck(event) == false ) continue;
+
+            for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+                int ichip = ichannel / NCH;
+                int inj_channel;
+                if ( oneChannelInjection_flag )
+                    inj_channel = ( injChip * NCH ) + injCh;
+                else
+                    inj_channel = ( ichip * NCH ) + injCh;
+
+                mip_allCh_goodEvent[ichannel][goodEventCount] = mip_allCh[ichannel][event];
+                XTalkCoupling[ichannel][goodEventCount] = mip_allCh[ichannel][goodEventCount] / mip_allCh[inj_channel][goodEventCount];
+                if( goodEventCount>200 && goodEventCount<=700 ){
+                    XTalkCoupling_Average[ichannel] += XTalkCoupling[ichannel][goodEventCount];
+                    AverageEvents++;
+                }
 
 #ifdef DEBUG 
-		cout << "goodEventCount = " << goodEventCount << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][goodEventCount] << " Xtalk = " << XTalkCoupling[ichannel][goodEventCount] << endl;
+                cout << "goodEventCount = " << goodEventCount << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][goodEventCount] << " Xtalk = " << XTalkCoupling[ichannel][goodEventCount] << endl;
 #endif
-	
-		/// Calulate goodEventCount ring Energy
-		int iring;
-		iring = ringPositionFinder( inj_channel, ichannel );
-		if( iring > -1 && !noisy_flag[ichannel] ) {
-		    if ( oneChannelInjection_flag ) {
-			mip_Ring_1Chip[iring][goodEventCount] += mip_allCh[ichannel][goodEventCount];
-			if ( iring == 1 && goodEventCount == 1 ) 
-			    ringChannelCount++;
-		    }
-		    else
-			mip_Ring_4Chip[iring][ichip][goodEventCount] += mip_allCh[ichannel][goodEventCount];
-		}
-	    }
-	    /// Calculate XTalkCoupling for FirstRing
-	    if ( oneChannelInjection_flag ) {
-		for(int iring = 1; iring < NRings; iring++) {
-		    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_allCh[ (injChip*NCH) + injCh ][goodEventCount] * ringChannelCount ) ;
-		}
-		if( event>200 && event<=700 ) {
-		    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][goodEventCount];
-#ifdef DEBUG
-		    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
-#endif
-		}
 
-	    }
-	    else {
-		for(int ichip = 0; ichip < NCHIP; ichip++){
-		    for(int iring = 1; iring < NRings; iring++) {
-			XTalkCoupling_Ring_4Chip[iring][ichip][goodEventCount] = mip_Ring_4Chip[iring][ichip][goodEventCount] / ( mip_allCh[ (ichip*NCH) + injCh ][goodEventCount] * 6 );
-		    }
-		}
-	    }
-	    goodEventCount++;
-	    
-	}
+                /// Calulate goodEventCount ring Energy
+                int iring;
+                iring = ringPositionFinder( inj_channel, ichannel );
+                if( iring > -1 && !noisy_flag[ichannel] ) {
+                    if ( oneChannelInjection_flag ) {
+                        mip_Ring_1Chip[iring][goodEventCount] += mip_allCh[ichannel][goodEventCount];
+                        if ( iring == 1 && goodEventCount == 1 )
+                            ringChannelCount++;
+                    }
+                    else
+                        mip_Ring_4Chip[iring][ichip][goodEventCount] += mip_allCh[ichannel][goodEventCount];
+                }
+            }
+            /// Calculate XTalkCoupling for FirstRing
+            if ( oneChannelInjection_flag ) {
+                for(int iring = 1; iring < NRings; iring++) {
+                    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_allCh[ (injChip*NCH) + injCh ][goodEventCount] * ringChannelCount ) ;
+                }
+                if( event>200 && event<=700 ) {
+                    XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][goodEventCount];
+#ifdef DEBUG
+                    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
+#endif
+                }
+
+            }
+            else {
+                for(int ichip = 0; ichip < NCHIP; ichip++){
+                    for(int iring = 1; iring < NRings; iring++) {
+                        XTalkCoupling_Ring_4Chip[iring][ichip][goodEventCount] = mip_Ring_4Chip[iring][ichip][goodEventCount] / ( mip_allCh[ (ichip*NCH) + injCh ][goodEventCount] * 6 );
+                    }
+                }
+            }
+            goodEventCount++;
+
+        }
     }
     /// --------------- End Loop of sweepPlotter --------------- ///
 
     
     /// --------------- Start of Loop --------------- ///
     for(int entry = 0; entry < Chain2->GetEntries(); entry++){
-	Chain2->GetEntry(entry);
-		
-	for (int ihit = 0; ihit < channelID->size(); ihit++){
-	    //cout << "" << endl;
-	}
+        Chain2->GetEntry(entry);
+
+        for (int ihit = 0; ihit < channelID->size(); ihit++){
+            //cout << "" << endl;
+        }
     }
     //cout << ringChannelCount << endl;
     XTalkCoupling_Ring_1Chip_average = XTalkCoupling_Ring_1Chip_average / (500 * ringChannelCount); 
     for (int ichannel = 0; ichannel < NCHANNEL; ichannel+=2) {
-    	XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
+        XTalkCoupling_Average[ichannel] /= (AverageEvents/NCHANNEL);
     }
 
     /// Fit
@@ -333,8 +333,8 @@ void makePlots::sweepPlotter(){
     /// Plots!!!!!
     ///
     if(oneChannelInjection_flag) {
-	oneChannelInjection_injectionPlots();
-	output_xtalkCoupling();
+        oneChannelInjection_injectionPlots();
+        output_xtalkCoupling();
     }    // hglgtot, mip, xtalk_ring VS dac_ctrl
     else { injectionPlots(); }
     injectionPlots_allCh(); // collect hglgtot plots for all channel 
@@ -354,121 +354,121 @@ void makePlots::sweepPlotter(){
 ///
 void makePlots::const_injPlotter() {
 
-        /// Define Parameters 
+    /// Define Parameters
     int MaxTS = 2; //choose this time sample to be the peak
 
   
     /// --------------- Start Loop of const_injPlotter --------------- ///
     for(int entry = 0; entry < TotalEntries ; ++entry) {
     
-	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
-	Chain1 -> GetEntry(entry);
-	Chain2 -> GetEntry(entry);
-	dac_ctrl[event] = dacinj;
+        if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
+        Chain1 -> GetEntry(entry);
+        Chain2 -> GetEntry(entry);
+        dac_ctrl[event] = dacinj;
 
-	// Timesample 
-	int TS[NSCA];
-	int TS0_sca, MaxTS_sca;
-	for(int sca = 0 ; sca < NSCA ; sca++) {
-	    TS[sca] = timesamp[sca];
-	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
-	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
-	}
+        // Timesample
+        int TS[NSCA];
+        int TS0_sca, MaxTS_sca;
+        for(int sca = 0 ; sca < NSCA ; sca++) {
+            TS[sca] = timesamp[sca];
+            if (timesamp[sca] == 0) { TS0_sca = sca ; }
+            if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
+        }
 
-	/// Passing hg, lg to self define array
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ich][sca] = hg[sca][ich];
-		lg_sig[ich][sca] = lg[sca][ich];
-	    }
-	}
-	
-	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+        /// Passing hg, lg to self define array
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                hg_sig[ich][sca] = hg[sca][ich];
+                lg_sig[ich][sca] = lg[sca][ich];
+            }
+        }
+
+        if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
 
 
 #ifdef DEBUG
-	cout << "event: " << event << endl;
-	for (int ich = 0; ich < NCH; ich++){
-	    cout << "chip: " << chip << " ch: " << ich << " == ";
-	    for (int sca = 0; sca < NSCA; sca++){
-		cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
-	    }
-	    cout << endl;
-	}
-	for (int ich = 0; ich < NCH; ich++){
-	    cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
-		 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
-	}
+        cout << "event: " << event << endl;
+        for (int ich = 0; ich < NCH; ich++){
+            cout << "chip: " << chip << " ch: " << ich << " == ";
+            for (int sca = 0; sca < NSCA; sca++){
+                cout << (int)hg_sig[ich][sca] << " " << (int)lg_sig[ich][sca] << " ";
+            }
+            cout << endl;
+        }
+        for (int ich = 0; ich < NCH; ich++){
+            cout << "ch: " << ich << " tot_slow: " << tot_slow[ich] << " toa_rise: " << toa_rise[ich] << " toa_fall: " << toa_fall[ich]
+                 << " toaf_r: " << toa_fall[ich] - toa_rise[ich] << endl;
+        }
 #endif
 
-	/// Injection & Cross Talk Analysis
-	for(int ich = 0; ich < NCH; ich++){
-	    int channel      = ich + chip*64;
-	    double hg = hg_sig[ich][MaxTS_sca];
-	    double lg = lg_sig[ich][MaxTS_sca];
-	    double tot = tot_slow[ich];
-	    /// mip conversion
-	    double energy_mip = mipConverter( hg, lg, tot, channel);
-	    mip_allCh[channel][event] = energy_mip;
-	    h_mip[ich+chip*64]->Fill(energy_mip);
-	}
+        /// Injection & Cross Talk Analysis
+        for(int ich = 0; ich < NCH; ich++){
+            int channel      = ich + chip*64;
+            double hg = hg_sig[ich][MaxTS_sca];
+            double lg = lg_sig[ich][MaxTS_sca];
+            double tot = tot_slow[ich];
+            /// mip conversion
+            double energy_mip = mipConverter( hg, lg, tot, channel);
+            mip_allCh[channel][event] = energy_mip;
+            h_mip[ich+chip*64]->Fill(energy_mip);
+        }
 
-	/// Injection XTalk calculation
-	if ( chip == 3 ) {
-	    for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
+        /// Injection XTalk calculation
+        if ( chip == 3 ) {
+            for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
 
-		int ichip = ichannel / NCH;
-		int inj_channel;
-		if ( oneChannelInjection_flag )
-		    inj_channel = ( injChip * NCH ) + injCh;
-		else
-		    inj_channel = ( ichip * NCH ) + injCh;
+                int ichip = ichannel / NCH;
+                int inj_channel;
+                if ( oneChannelInjection_flag )
+                    inj_channel = ( injChip * NCH ) + injCh;
+                else
+                    inj_channel = ( ichip * NCH ) + injCh;
 
-		XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
-		if ( ichannel == inj_channel )
-		    h_xtalkCoupling[ichannel]->Fill(1);
-		else
-		    h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
-		
+                XTalkCoupling[ichannel][event] = mip_allCh[ichannel][event] / mip_allCh[inj_channel][event];
+                if ( ichannel == inj_channel )
+                    h_xtalkCoupling[ichannel]->Fill(1);
+                else
+                    h_xtalkCoupling[ichannel]->Fill(XTalkCoupling[ichannel][event]);
+
 
 #ifdef DEBUG 
-		cout << "event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
+                cout << "event = " << event << " channel = " << ichannel << " energy = " << mip_allCh[ichannel][event] << " Xtalk = " << XTalkCoupling[ichannel][event] << endl;
 #endif
-	
-		
-		/// Calulate event ring Energy
-		int iring;
-		iring = ringPositionFinder( inj_channel, ichannel );
-		if( iring > -1 ) {
-		    
-		    if ( oneChannelInjection_flag ) 
-			mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
-		    else
-			mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
-		}
-	    }
 
-	    /// Calculate XTalkCoupling 
-	    if ( oneChannelInjection_flag ) {
-		for(int iring = 1; iring < NRings; iring++) {
-		    XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
-		}
-		if( event>200 && event<=700 ) {
-		    h_xtalkCoupling_Ring_1chip->Fill( XTalkCoupling_Ring_1Chip[1][event] );
+
+                /// Calulate event ring Energy
+                int iring;
+                iring = ringPositionFinder( inj_channel, ichannel );
+                if( iring > -1 ) {
+
+                    if ( oneChannelInjection_flag )
+                        mip_Ring_1Chip[iring][event] += mip_allCh[ichannel][event];
+                    else
+                        mip_Ring_4Chip[iring][ichip][event] += mip_allCh[ichannel][event];
+                }
+            }
+
+            /// Calculate XTalkCoupling
+            if ( oneChannelInjection_flag ) {
+                for(int iring = 1; iring < NRings; iring++) {
+                    XTalkCoupling_Ring_1Chip[iring][event] = mip_Ring_1Chip[iring][event] / mip_Ring_1Chip[0][event];
+                }
+                if( event>200 && event<=700 ) {
+                    h_xtalkCoupling_Ring_1chip->Fill( XTalkCoupling_Ring_1Chip[1][event] );
 #ifdef DEBUG
-		    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
+                    cout << "XTalkCoupling_Ring_1Chip_average = "  << XTalkCoupling_Ring_1Chip_average << endl;
 #endif
-		}
+                }
 
-	    }
-	    else {
-		for(int ichip = 0; ichip < NCHIP; ichip++){
-		    for(int iring = 1; iring < NRings; iring++) {
-			XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
-		    }
-		}
-	    }
-	}
+            }
+            else {
+                for(int ichip = 0; ichip < NCHIP; ichip++){
+                    for(int iring = 1; iring < NRings; iring++) {
+                        XTalkCoupling_Ring_4Chip[iring][ichip][event] = mip_Ring_4Chip[iring][ichip][event] / mip_Ring_4Chip[0][ichip][event];
+                    }
+                }
+            }
+        }
     }
     /// --------------- End Loop of const_injPlotter --------------- ///
 
@@ -496,7 +496,7 @@ void makePlots::const_injPlotter() {
 /// ==================== cosmicAnalyzer ==================== ///
 ///
 void makePlots::cosmicAnalyzer(){
-	
+
     /// Declare Parameters
     int TotalEntries = Chain1->GetEntries();
     int Nevents = TotalEntries/NCHIP;
@@ -511,44 +511,44 @@ void makePlots::cosmicAnalyzer(){
     //==================== Loop over the events ====================
    
     for(int entry = 0; entry < TotalEntries ; ++entry){
-	if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
-	Chain1 -> GetEntry(entry);
+        if(entry%1000==0){ cout << "Now Processing entry = " << entry << endl; }
+        Chain1 -> GetEntry(entry);
 
-	/// Timesample
-	int TS[NSCA];
-	int TS0_sca, MaxTS_sca;
-	for(int sca = 0 ; sca < NSCA ; sca++) {
-	    TS[sca] = timesamp[sca];
-	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
-	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
-	}
+        /// Timesample
+        int TS[NSCA];
+        int TS0_sca, MaxTS_sca;
+        for(int sca = 0 ; sca < NSCA ; sca++) {
+            TS[sca] = timesamp[sca];
+            if (timesamp[sca] == 0) { TS0_sca = sca ; }
+            if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
+        }
 
-	/// hg, lg signal passed to self defined parameters 
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ich][sca] = hg[sca][ich];
-		lg_sig[ich][sca] = lg[sca][ich];
-	    }
-	}
-	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); }  // Ped & CM Subtraction
+        /// hg, lg signal passed to self defined parameters
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                hg_sig[ich][sca] = hg[sca][ich];
+                lg_sig[ich][sca] = lg[sca][ich];
+            }
+        }
+        if(subPed_flag) { Pedestal_CM_Subtractor( chip ); }  // Ped & CM Subtraction
 
 
-	/// Calculate hit per chip
-	int hit = 0;
-	for(int ich = 0; ich < NCH; ich++){
-	    if ( mipSigCheck(hg_sig[ich], TS ) ) { hit++; }
-	}
+        /// Calculate hit per chip
+        int hit = 0;
+        for(int ich = 0; ich < NCH; ich++){
+            if ( mipSigCheck(hg_sig[ich], TS ) ) { hit++; }
+        }
 
-	/// Fill histogram
-	for (int ich = 0; ich < NCH; ich+=2) {
-	    if ( ich + chip*NCH == 44 ) continue;
-	    //if ( ich != 18 ) continue;
-	    if ( mipSigCheck(hg_sig[ich], TS ) && hit == 1 ) {
-		h_mipAllCh->Fill( hg_sig[ich][MaxTS_sca] );
-		pulsePlotter( hg_sig[ich], TS , event, chip, ich, -1, -1);
-		mipCount++;
-	    }
-	}
+        /// Fill histogram
+        for (int ich = 0; ich < NCH; ich+=2) {
+            if ( ich + chip*NCH == 44 ) continue;
+            //if ( ich != 18 ) continue;
+            if ( mipSigCheck(hg_sig[ich], TS ) && hit == 1 ) {
+                h_mipAllCh->Fill( hg_sig[ich][MaxTS_sca] );
+                pulsePlotter( hg_sig[ich], TS , event, chip, ich, -1, -1);
+                mipCount++;
+            }
+        }
     }
 
     //... ==================== End of Loop ==================== ...
@@ -572,49 +572,49 @@ void makePlots::Pulse_display( int displayChannel, int pulseDisplay_type, int lo
 
     /// --------------- Loop Over Events --------------- ///
     for(int ev = 0; ev < Nevents ; ++ev){
-	Chain1 -> GetEntry(ev);
-	if( event < startEv ) continue;
-	int TS[NSCA];
-	for(int i = 0 ; i < NSCA ; ++i)  {
-	    TS[i] = timesamp[i];
-	}
+        Chain1 -> GetEntry(ev);
+        if( event < startEv ) continue;
+        int TS[NSCA];
+        for(int i = 0 ; i < NSCA ; ++i)  {
+            TS[i] = timesamp[i];
+        }
 
-	/// Passing hg lg signal to self defined array
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ich][sca] = hg[sca][ich];
-		lg_sig[ich][sca] = lg[sca][ich];
-	    }
-	}
-	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+        /// Passing hg lg signal to self defined array
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                hg_sig[ich][sca] = hg[sca][ich];
+                lg_sig[ich][sca] = lg[sca][ich];
+            }
+        }
+        if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
 
-	/// --------------- Pulse Plots --------------- ///
-		
-	/// Loop Over every Channel
-	if ( pulseDisplay_type == 0 && displayChannel == -1) { 
-	    for( int ich =0; ich < 64; ich+=2){
-		pulsePlotter( hg_sig[ich], TS, event, chip, ich, lowerR, upperR);
-	    }
-	}
-	/// injCh display
-	else if ( pulseDisplay_type == 1 ) { 
-	    pulsePlotter( lg_sig[injCh], TS, event, chip, injCh, lowerR, upperR);
-	}
-	/// find signal and display 
-	else if ( pulseDisplay_type == 2 ) {  
-	    for( int ich =0; ich < 64; ich+=2){
-		if ( mipSigCheck( hg_sig[ich], TS ) ) {
-		    pulsePlotter( hg_sig[ich], TS, event, chip, ich, lowerR, upperR );
-		}
-	    }
-	}
-	/// selected channel display
-	else {  
-	    int ichip = displayChannel / 64;
-	    int ich   = displayChannel % 64;
-	    if ( chip != ichip ) continue;
-	    pulsePlotter( hg_sig[ich], TS, event, ichip, ich, lowerR, upperR);
-	}
+        /// --------------- Pulse Plots --------------- ///
+
+        /// Loop Over every Channel
+        if ( pulseDisplay_type == 0 && displayChannel == -1) {
+            for( int ich =0; ich < 64; ich+=2){
+                pulsePlotter( hg_sig[ich], TS, event, chip, ich, lowerR, upperR);
+            }
+        }
+        /// injCh display
+        else if ( pulseDisplay_type == 1 ) {
+            pulsePlotter( lg_sig[injCh], TS, event, chip, injCh, lowerR, upperR);
+        }
+        /// find signal and display
+        else if ( pulseDisplay_type == 2 ) {
+            for( int ich =0; ich < 64; ich+=2){
+                if ( mipSigCheck( hg_sig[ich], TS ) ) {
+                    pulsePlotter( hg_sig[ich], TS, event, chip, ich, lowerR, upperR );
+                }
+            }
+        }
+        /// selected channel display
+        else {
+            int ichip = displayChannel / 64;
+            int ich   = displayChannel % 64;
+            if ( chip != ichip ) continue;
+            pulsePlotter( hg_sig[ich], TS, event, ichip, ich, lowerR, upperR);
+        }
     }
 
 }
@@ -628,16 +628,16 @@ double makePlots::mipConverter( double hg_SubPed, double lg_SubPed, double tot ,
     int ich   = channel % NCH;
     
     if( hg_SubPed < HGTP[ichip][ich]){
-	mip = hg_SubPed * HG2DAC[ichip][ich];
+        mip = hg_SubPed * HG2DAC[ichip][ich];
     }
     else{
-	if( lg_SubPed < LGTP[ichip][ich]){
-	    mip = lg_SubPed * LG2DAC[ichip][ich];
-	}
-	else{
-	    mip =  (tot - TOTOffSet[ichip][ich]) * TOT2DAC[ichip][ich];
-	    //mip = tot*TOT2DAC[ichip][ich];
-	}
+        if( lg_SubPed < LGTP[ichip][ich]){
+            mip = lg_SubPed * LG2DAC[ichip][ich];
+        }
+        else{
+            mip =  (tot - TOTOffSet[ichip][ich]) * TOT2DAC[ichip][ich];
+            //mip = tot*TOT2DAC[ichip][ich];
+        }
     }
     return mip;
     
@@ -648,18 +648,18 @@ bool makePlots::totFireCheck(int eventID){
 
     bool totFire_flag = true;
     if ( !oneChannelInjection_flag ) {
-	for ( int ichip = 0; ichip < NCHIP; ichip++ ){
-	    int inj_channel = ichip*NCH + injCh;
-	    if ( lg_allCh[inj_channel][eventID] > LGTP[ichip][injCh] && tot_allCh[inj_channel][eventID] <= 4 ) {
-		totFire_flag = false;
-	    }
-	}
+        for ( int ichip = 0; ichip < NCHIP; ichip++ ){
+            int inj_channel = ichip*NCH + injCh;
+            if ( lg_allCh[inj_channel][eventID] > LGTP[ichip][injCh] && tot_allCh[inj_channel][eventID] <= 4 ) {
+                totFire_flag = false;
+            }
+        }
     }
     else {
-	int inj_channel = injChip*NCH + injCh;
-	if ( lg_allCh[inj_channel][eventID] > LGTP[injChip][injCh] && tot_allCh[inj_channel][eventID] <= 4 ) {
-	    totFire_flag = false;
-	}
+        int inj_channel = injChip*NCH + injCh;
+        if ( lg_allCh[inj_channel][eventID] > LGTP[injChip][injCh] && tot_allCh[inj_channel][eventID] <= 4 ) {
+            totFire_flag = false;
+        }
     }
 
     return totFire_flag;
@@ -688,22 +688,22 @@ int makePlots::ringPositionFinder( int inj_channel, int ichannel){
     int ring = -1;
   
     if ( ichannel % 2 == 0 ){ 
-	double dx = X - inj_X;
-	double dy = Y - inj_Y;
-	double dR = sqrt(dx*dx + dy*dy);
-	
-	if ( formatCh == formatInjCh ){ ring = 0; }
-	else {
-	    ring = 0;
-	    while(true) {
-		ring++;
-		if( ring == 5 ) {
-		    ring = -1;
-		    break; 
-		}
-		if( dR < 1.12455*ring*1.2 ) break;
-	    }
-	}
+        double dx = X - inj_X;
+        double dy = Y - inj_Y;
+        double dR = sqrt(dx*dx + dy*dy);
+
+        if ( formatCh == formatInjCh ){ ring = 0; }
+        else {
+            ring = 0;
+            while(true) {
+                ring++;
+                if( ring == 5 ) {
+                    ring = -1;
+                    break;
+                }
+                if( dR < 1.12455*ring*1.2 ) break;
+            }
+        }
     }
 
     return ring;
@@ -728,72 +728,72 @@ void makePlots::yamlReader(){
     string line;
     ifstream yamlFile(yamlFileName);
     if(!yamlFile.is_open()){
-	cout << "Did not find injection file " << yamlFileName
-	     << ".\n Take this run as pedestal.(Inj_dac = 0)" << endl;
+        cout << "Did not find injection file " << yamlFileName
+             << ".\n Take this run as pedestal.(Inj_dac = 0)" << endl;
     }
     if(yamlFile.is_open()){
-	cout << "yamlFile = " << yamlFileName << endl;
-	while( true ) {
-	    if ( yamlFile.eof() ) break;
-	    getline (yamlFile, line);
-	  
-	    if ( line.find("channelIds:") != -1 ){
-		string tmp;
-		start = line.find("[");
-		end = line.find("]");
-		searchstr = line.substr(start+1,end-start+1);
-		injCh = atoi(searchstr.c_str());
+        cout << "yamlFile = " << yamlFileName << endl;
+        while( true ) {
+            if ( yamlFile.eof() ) break;
+            getline (yamlFile, line);
 
-		if (start == -1) {
-		    getline(yamlFile, line);
-		    start = line.find_last_of("-");
-		    searchstr = line.erase(0,start+2);
-		    injCh = atoi(searchstr.c_str());
-		}
-		cout << "InjCh = " << injCh << endl;
-	    }
-	    else if ( line.find("acquisitionType") != -1 ){
-		start = line.find(":");
-		searchstr = line.erase(0, start+2);
-		acquisitionType = searchstr;
-		cout << "acquisitionType = " << acquisitionType << endl;
-	    }
-	    else if ( line.find("moduleNumber") != -1 ){
-		start = line.find("moduleNumber:");
-		end = line.find(",");
-		searchstr = line.substr(start+14,end-start-14);
-		if ( searchstr.find("'") != -1 ) {
-		    start = searchstr.find("'");
-		    end = searchstr.find_last_of("'");
-		    cout << start << " " << end << endl;
-		    searchstr = searchstr.substr(start+1,end-start-1);
-		}
-		moduleNumber = searchstr;
-		cout << "moduleNumber = " << moduleNumber << endl;
-	    }
-	    else if ( line.find("externalChargeInjection") != -1 ) {
-		start = line.find(":");
-		searchstr = line.erase(0, start+2);
-		if ( searchstr == "true" )
-		    externalChargeInjection_flag = true;
-		else
-		    externalChargeInjection_flag = false;
-	    }
-	    else if ( line.find("chipId:") != -1 ) {
-		start = line.find(":");
-		searchstr = line.substr(start+1,end-start+1);
-		injChip = atoi(searchstr.c_str());
-		if ( injChip == -1 ) { 
-		    cout << "InjChip = " << injChip << endl;
-		    oneChannelInjection_flag = false;
-		}
-		else {
-		    injChip = 3 - injChip;
-		    cout << "InjChip = " << injChip << endl;
-		    oneChannelInjection_flag = true;
-		}
-	    }
-	}
+            if ( line.find("channelIds:") != -1 ){
+                string tmp;
+                start = line.find("[");
+                end = line.find("]");
+                searchstr = line.substr(start+1,end-start+1);
+                injCh = atoi(searchstr.c_str());
+
+                if (start == -1) {
+                    getline(yamlFile, line);
+                    start = line.find_last_of("-");
+                    searchstr = line.erase(0,start+2);
+                    injCh = atoi(searchstr.c_str());
+                }
+                cout << "InjCh = " << injCh << endl;
+            }
+            else if ( line.find("acquisitionType") != -1 ){
+                start = line.find(":");
+                searchstr = line.erase(0, start+2);
+                acquisitionType = searchstr;
+                cout << "acquisitionType = " << acquisitionType << endl;
+            }
+            else if ( line.find("moduleNumber") != -1 ){
+                start = line.find("moduleNumber:");
+                end = line.find(",");
+                searchstr = line.substr(start+14,end-start-14);
+                if ( searchstr.find("'") != -1 ) {
+                    start = searchstr.find("'");
+                    end = searchstr.find_last_of("'");
+                    cout << start << " " << end << endl;
+                    searchstr = searchstr.substr(start+1,end-start-1);
+                }
+                moduleNumber = searchstr;
+                cout << "moduleNumber = " << moduleNumber << endl;
+            }
+            else if ( line.find("externalChargeInjection") != -1 ) {
+                start = line.find(":");
+                searchstr = line.erase(0, start+2);
+                if ( searchstr == "true" )
+                    externalChargeInjection_flag = true;
+                else
+                    externalChargeInjection_flag = false;
+            }
+            else if ( line.find("chipId:") != -1 ) {
+                start = line.find(":");
+                searchstr = line.substr(start+1,end-start+1);
+                injChip = atoi(searchstr.c_str());
+                if ( injChip == -1 ) {
+                    cout << "InjChip = " << injChip << endl;
+                    oneChannelInjection_flag = false;
+                }
+                else {
+                    injChip = 3 - injChip;
+                    cout << "InjChip = " << injChip << endl;
+                    oneChannelInjection_flag = true;
+                }
+            }
+        }
     }
 
     cout << endl;
@@ -809,34 +809,34 @@ void makePlots::GainFactorReader( string gainfile ){
     char tmp[50];
     int ichip, ich;
     if(!GainFile.is_open()){
-	cout << "Did not find GainFactor file " << gainfile
-	     << ".\n Take this run's GainFactor as default & calculate the Gainfactors " << endl;
-	for(ichip = 0; ichip < NCHIP; ichip++){
-	    for(ich = 0; ich < NCH; ich++){
-		HGTP[ichip][ich] = 1500;
-		LG2DAC[ichip][ich] = 8.5;
-		LGTP[ichip][ich] = 900;
-		TOT2DAC[ichip][ich] = 3.8;
-		TOTOffSet[ichip][ich] = 180;
-	    }
-	}
-	//Gain_factor_producer();
+        cout << "Did not find GainFactor file " << gainfile
+             << ".\n Take this run's GainFactor as default & calculate the Gainfactors " << endl;
+        for(ichip = 0; ichip < NCHIP; ichip++){
+            for(ich = 0; ich < NCH; ich++){
+                HGTP[ichip][ich] = 1500;
+                LG2DAC[ichip][ich] = 8.5;
+                LGTP[ichip][ich] = 900;
+                TOT2DAC[ichip][ich] = 3.8;
+                TOTOffSet[ichip][ich] = 180;
+            }
+        }
+        //Gain_factor_producer();
     }
   
     if(GainFile.is_open()){
-	cout << "gainFile = " << gainfile << endl;
-	//getline(GainFile,line);
-	while(!GainFile.eof()){
-	    /*
-	    GainFile >> tmp >> tmp >> ichip >> ich >> tmp;
-	    GainFile >> HGTP[ichip][ich] >> LG2HG_Conversion[ichip][ich] >> LGTP[ichip][ich] >> TOT2LG_Conversion[ichip][ich] >> TOTOffSet[ichip][ich];
-	    getline(GainFile,line);
-	    */
-	    GainFile >> ichip >> ich;
-	    GainFile >> HG2DAC[ichip][ich] >> HGTP[ichip][ich] >> LG2DAC[ichip][ich] >> LGTP[ichip][ich] >> TOT2DAC[ichip][ich] >> TOTOffSet[ichip][ich];
-	    HGTP[ichip][ich] = 1500;
-	    LGTP[ichip][ich] = 900;
-	}
+        cout << "gainFile = " << gainfile << endl;
+        //getline(GainFile,line);
+        while(!GainFile.eof()){
+            /*
+              GainFile >> tmp >> tmp >> ichip >> ich >> tmp;
+              GainFile >> HGTP[ichip][ich] >> LG2HG_Conversion[ichip][ich] >> LGTP[ichip][ich] >> TOT2LG_Conversion[ichip][ich] >> TOTOffSet[ichip][ich];
+              getline(GainFile,line);
+            */
+            GainFile >> ichip >> ich;
+            GainFile >> HG2DAC[ichip][ich] >> HGTP[ichip][ich] >> LG2DAC[ichip][ich] >> LGTP[ichip][ich] >> TOT2DAC[ichip][ich] >> TOTOffSet[ichip][ich];
+            HGTP[ichip][ich] = 1500;
+            LGTP[ichip][ich] = 900;
+        }
     }
     cout << endl;
 }
@@ -848,25 +848,25 @@ void makePlots::noisyChannelReader( string noisyFileName ) {
     string line;
     int ichip, ich;
     for ( int ichannel = 0; ichannel < NCHANNEL; ichannel++ ) {
-	noisy_flag[ichannel] = false;
+        noisy_flag[ichannel] = false;
     }
     if(!noisyFile.is_open()){
-	cout << "Did not find noisyChannelFile " << noisyFileName
-	     << ".\n not setting noisyChannels " << endl;
+        cout << "Did not find noisyChannelFile " << noisyFileName
+             << ".\n not setting noisyChannels " << endl;
     }
     else{
-	cout << "noisyFile = " << noisyFileName << endl;
-	while(!noisyFile.eof()){
-	    noisyFile >> ichip >> ich;
-	    int ichannel = ichip*NCH + ich;
-	    noisyChannel.push_back(ichannel);
-	    noisy_flag[ichannel] = true;
-	}
-	noisyChannel.pop_back();
+        cout << "noisyFile = " << noisyFileName << endl;
+        while(!noisyFile.eof()){
+            noisyFile >> ichip >> ich;
+            int ichannel = ichip*NCH + ich;
+            noisyChannel.push_back(ichannel);
+            noisy_flag[ichannel] = true;
+        }
+        noisyChannel.pop_back();
     }
     cout << "noisy channels = ";
     for(int i = 0; i < noisyChannel.size(); i++){
-	cout << noisyChannel.at(i) << " " ;
+        cout << noisyChannel.at(i) << " " ;
     }
     cout << endl << endl;
 }
@@ -876,25 +876,25 @@ void makePlots::noisyChannelReader( string noisyFileName ) {
 /// ==================== Pedestal_CM_Subtractor ==================== ///
 ///
 void makePlots::Pedestal_CM_Subtractor( int chip ){
-	
-    for (int ich = 0; ich < NCH; ich+=2){
-	for (int sca = 0; sca < NSCA; sca++){
-	    hg_sig[ich][sca] -= avg_HG[chip][ich][sca];  // Pedestal Subtraction
-	    lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
-	}
-    }
-/*
-    double *hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
-    double *lgCM_sca = CMCalculator_v2( lg_sig, chip );
-	
 
-    for (int ich = 0; ich < NCH; ich++){
-	for (int sca = 0; sca < NSCA; sca++){
-	    hg_sig[ich][sca] -= hgCM_sca[sca]; // CM subtraction
-	    lg_sig[ich][sca] -= lgCM_sca[sca];
-	}
+    for (int ich = 0; ich < NCH; ich+=2){
+        for (int sca = 0; sca < NSCA; sca++){
+            hg_sig[ich][sca] -= avg_HG[chip][ich][sca];  // Pedestal Subtraction
+            lg_sig[ich][sca] -= avg_LG[chip][ich][sca];
+        }
     }
-*/
+    /*
+      double *hgCM_sca = CMCalculator_v2( hg_sig, chip ); // Calculate CM for each sca
+      double *lgCM_sca = CMCalculator_v2( lg_sig, chip );
+
+
+      for (int ich = 0; ich < NCH; ich++){
+      for (int sca = 0; sca < NSCA; sca++){
+      hg_sig[ich][sca] -= hgCM_sca[sca]; // CM subtraction
+      lg_sig[ich][sca] -= lgCM_sca[sca];
+      }
+      }
+    */
 }
 
 ///
@@ -907,24 +907,24 @@ double* makePlots::CMCalculator_v2 ( double **sig_subPed, int chip ) {
     int scaCount[NSCA];
     
     for (int sca = 0; sca < NSCA; sca++) {
-	meanChipPedestal[sca] = 0;
-	scaCount[sca] = 0;
+        meanChipPedestal[sca] = 0;
+        scaCount[sca] = 0;
     }
 
     for (int ich = 0; ich < NCH; ich+=2) {
-	int ichannel = ich + chip*NCH;
-	int inj_channel = injCh + injChip*NCH;
-	if (noisy_flag[ichannel]) continue;
+        int ichannel = ich + chip*NCH;
+        int inj_channel = injCh + injChip*NCH;
+        if (noisy_flag[ichannel]) continue;
 
-	// Calculate mean pedestal for each sca 
-	for (int sca = 0; sca < NSCA; sca++) {
-	    meanChipPedestal[sca] += sig_subPed[ich][sca];
-	    scaCount[sca]++;
-	}
+        // Calculate mean pedestal for each sca
+        for (int sca = 0; sca < NSCA; sca++) {
+            meanChipPedestal[sca] += sig_subPed[ich][sca];
+            scaCount[sca]++;
+        }
     }
 
     for (int sca = 0; sca < NSCA; sca++) {
-	meanChipPedestal[sca] /= scaCount[sca];
+        meanChipPedestal[sca] /= scaCount[sca];
     }
     return meanChipPedestal;
 }
@@ -940,15 +940,15 @@ double makePlots::CMCalculator( double **sig_subPed, int *TS ) {
     double meanChipPedestal = 0;
   
     for(int ich = 0; ich < NCH; ich+=2){
-	for( int timesample = 0; timesample <= 9; timesample++){
-	    int sca = 0;
-	    while(true){
-		if ( TS[sca] == timesample ) break;
-		else sca++;
-	    }
-	    meanChipPedestal += sig_subPed[sca][ich];
-	    scaCount++;
-	}
+        for( int timesample = 0; timesample <= 9; timesample++){
+            int sca = 0;
+            while(true){
+                if ( TS[sca] == timesample ) break;
+                else sca++;
+            }
+            meanChipPedestal += sig_subPed[sca][ich];
+            scaCount++;
+        }
     }
     meanChipPedestal /= scaCount;
     return meanChipPedestal;
@@ -965,11 +965,11 @@ bool makePlots::mipSigCheck( double *sig, int *TS ) {
     double sig_ts[NSCA];
   
     for( int sca = 0; sca < NSCA; sca++) {
-	sig_ts[ TS[sca] ] = sig[sca];
-	if ( TS[sca] > 1 && TS[sca] < 5 && sig[sca] < p_noisy_cut && sig[sca] > noSignal_cut ) sig_flag = true;
+        sig_ts[ TS[sca] ] = sig[sca];
+        if ( TS[sca] > 1 && TS[sca] < 5 && sig[sca] < p_noisy_cut && sig[sca] > noSignal_cut ) sig_flag = true;
     }
     for( int sca = 0; sca < NSCA; sca++) {
-	if ( sig[sca] < n_noisy_cut ) sig_flag = false;
+        if ( sig[sca] < n_noisy_cut ) sig_flag = false;
     }
     if ( sig_ts[0] > sig_ts[2] || sig_ts[0] > sig_ts[3] ) sig_flag = false;
     if ( sig_ts[0] < -200 || sig_ts[0] > 150 ) sig_flag = false;
@@ -985,7 +985,7 @@ bool makePlots::mipSigCheck( double *sig, int *TS ) {
 void makePlots::pulsePlotter( double *sig, int *TS, int ev, int ichip, int ich, int lowerR, int upperR ) {
 
     //gROOT->SetBatch("kFALSE");
-	
+
     // This function plots the input 13 timesamples and show it on the screen 
     double double_TS[NSCA];
     for(int i = 0; i < NSCA; i++) double_TS[i] = (double)TS[i];
@@ -1021,46 +1021,46 @@ void makePlots::read_P_and_N(string ped_file){
     ifstream inHG(HG_name);
     ifstream inLG(LG_name);
     if( !inHG.is_open() || !inLG.is_open()){
-	cout << "File not found! Neither " << HG_name << " or " << LG_name
-	     << " exist!" << endl;
-	return;}
+        cout << "File not found! Neither " << HG_name << " or " << LG_name
+             << " exist!" << endl;
+        return;}
     else{
-	cout << "pedFile = " << endl;
-	cout << "1. " << HG_name << "\n" << "2. "<< LG_name << endl;
-	string line;
-	int ichip,ich;
-	int testeof;
+        cout << "pedFile = " << endl;
+        cout << "1. " << HG_name << "\n" << "2. "<< LG_name << endl;
+        string line;
+        int ichip,ich;
+        int testeof;
 
-	
-	while(true){
-	    inHG >> testeof;
-	    if( inHG.eof() ) break;
-	    else{
-		inHG >> ichip; 
-		inHG >> ich;
-		for(int sca = 0; sca < NSCA ; ++sca){
-		    inHG >> avg_HG[ichip][ich][sca];
-		    inHG >> sigma_HG[ichip][ich][sca];
-		}
-	    }
-	}
 
-	while(true){
-	    inLG >> testeof;
-	    if( inLG.eof() ) break;
-	    else{
-		inLG >> ichip;
-		inLG >> ich;
-		for(int sca = 0; sca < NSCA ; ++sca){
-		    inLG >> avg_LG[ichip][ich][sca];
-		    inLG >> sigma_LG[ichip][ich][sca];
-		}
-	    }
-	}
+        while(true){
+            inHG >> testeof;
+            if( inHG.eof() ) break;
+            else{
+                inHG >> ichip;
+                inHG >> ich;
+                for(int sca = 0; sca < NSCA ; ++sca){
+                    inHG >> avg_HG[ichip][ich][sca];
+                    inHG >> sigma_HG[ichip][ich][sca];
+                }
+            }
+        }
+
+        while(true){
+            inLG >> testeof;
+            if( inLG.eof() ) break;
+            else{
+                inLG >> ichip;
+                inLG >> ich;
+                for(int sca = 0; sca < NSCA ; ++sca){
+                    inLG >> avg_LG[ichip][ich][sca];
+                    inLG >> sigma_LG[ichip][ich][sca];
+                }
+            }
+        }
     
-	cout << "Reading pedestal file done!" << endl << endl;
-	inHG.close();
-	inLG.close();
+        cout << "Reading pedestal file done!" << endl << endl;
+        inHG.close();
+        inLG.close();
     }  
 }
 
@@ -1073,11 +1073,11 @@ void makePlots::readmap(){
     int ichip,ich,itype,iformatCH;
     double iposx, iposy;
     while(true){
-	getline(file,line);
-	if( file.eof() ) break;
-	file >> ichip >> ich >> iposx >> iposy >> itype;
-	iformatCH = ichip*32 + ich/2;
-	CHmap[iformatCH] = make_pair(iposx,iposy);}
+        getline(file,line);
+        if( file.eof() ) break;
+        file >> ichip >> ich >> iposx >> iposy >> itype;
+        iformatCH = ichip*32 + ich/2;
+        CHmap[iformatCH] = make_pair(iposx,iposy);}
     file.close();
     //Since there is no such pad, assign a unreasonable value
     CHmap[2*32+60/2] = make_pair(1000.,1000.);
@@ -1093,14 +1093,14 @@ void makePlots::readSensor2Hexaboard(){
     if ( !file.is_open() ) { cout << "missing sensor2hexaboard.txt" << endl; }
     
     while(!file.eof()){
-	int icell, channel;
-	file >> icell >> channel;
-	sensor2hexaboard[channel/2] = icell;
+        int icell, channel;
+        file >> icell >> channel;
+        sensor2hexaboard[channel/2] = icell;
     }
 
 #ifdef DEBUG
     for(int channel = 0; channel < NCHANNEL; channel+=2){
-	cout << channel << " " << sensor2hexaboard[channel/2] << endl;
+        cout << channel << " " << sensor2hexaboard[channel/2] << endl;
     }
 #endif
 }
@@ -1120,14 +1120,14 @@ void makePlots::InitTH2Poly(TH2Poly& poly)
     for(int header = 0; header < 4; ++header )     getline(file,line);
   
     while(true){
-	getline(file,line);
-	if( file.eof() ) break;
-	file >> iu >> iv >> CellXYsize;    
-	for(int i = 0; i < CellXYsize ; ++i){
-	    getline(file,line);
-	    file >> HexX[i] >> HexY[i];
-	}
-	poly.AddBin(CellXYsize, HexX, HexY);
+        getline(file,line);
+        if( file.eof() ) break;
+        file >> iu >> iv >> CellXYsize;
+        for(int i = 0; i < CellXYsize ; ++i){
+            getline(file,line);
+            file >> HexX[i] >> HexY[i];
+        }
+        poly.AddBin(CellXYsize, HexX, HexY);
     }
     file.close();
 }
@@ -1159,60 +1159,60 @@ void makePlots::Gain_factor_producer(){
     //==================== Initialize ====================
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
-	HGTP_flag[ichip] = false;
-	LGTP_flag[ichip] = false;
+        HGTP_flag[ichip] = false;
+        LGTP_flag[ichip] = false;
     }
 
 
     //==================== Loop Over Events ====================
 
     for(int ev = 0; ev < TotalEntries; ev++){
-	if(ev%1000 == 0){ cout << "Now Processing = " << ev << endl;}
-	Chain1->GetEntry(ev);
+        if(ev%1000 == 0){ cout << "Now Processing = " << ev << endl;}
+        Chain1->GetEntry(ev);
 
     
-	int TS0_sca, MaxTS_sca;
-	for(int sca = 0 ; sca < NSCA ; sca++) {
-	    if (timesamp[sca] == 0) { TS0_sca = sca ; }
-	    if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
-	}
+        int TS0_sca, MaxTS_sca;
+        for(int sca = 0 ; sca < NSCA ; sca++) {
+            if (timesamp[sca] == 0) { TS0_sca = sca ; }
+            if (timesamp[sca] == MaxTS) { MaxTS_sca = sca ; }
+        }
 
-	/// Passing hg, lg to self define array
-	for (int ich = 0; ich < NCH; ich++){
-	    for (int sca = 0; sca < NSCA; sca++){
-		hg_sig[ich][sca] = hg[sca][ich];
-		lg_sig[ich][sca] = lg[sca][ich];
-	    }
-	}
-	if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
+        /// Passing hg, lg to self define array
+        for (int ich = 0; ich < NCH; ich++){
+            for (int sca = 0; sca < NSCA; sca++){
+                hg_sig[ich][sca] = hg[sca][ich];
+                lg_sig[ich][sca] = lg[sca][ich];
+            }
+        }
+        if(subPed_flag) { Pedestal_CM_Subtractor( chip ); } // Ped & CM Subtraction
 
-	if ( totFireCheck_chip ( chip, lg_sig[injCh][MaxTS_sca], tot_slow[injCh] ) == false ) continue;
+        if ( totFireCheck_chip ( chip, lg_sig[injCh][MaxTS_sca], tot_slow[injCh] ) == false ) continue;
 
-	goodEventCount_chip[chip]++;
-	hg_injCh[chip].push_back( hg_sig[injCh][MaxTS_sca] );
-	lg_injCh[chip].push_back( lg_sig[injCh][MaxTS_sca] );
-	tot_injCh[chip].push_back( tot_slow[injCh] );
-	dac_ctrl[chip].push_back( dacinj );
-	
+        goodEventCount_chip[chip]++;
+        hg_injCh[chip].push_back( hg_sig[injCh][MaxTS_sca] );
+        lg_injCh[chip].push_back( lg_sig[injCh][MaxTS_sca] );
+        tot_injCh[chip].push_back( tot_slow[injCh] );
+        dac_ctrl[chip].push_back( dacinj );
+
 #ifdef DEBUG	
-	cout << "event " << event << " chip " << chip << " goodevent" << goodEventCount_chip[chip] << " hg " <<  hg_injCh[chip][goodEventCount_chip[chip]] << " lg " << lg_injCh[chip][goodEventCount_chip[chip]] << " tot " << tot_injCh[chip][goodEventCount_chip[chip]] << endl;
+        cout << "event " << event << " chip " << chip << " goodevent" << goodEventCount_chip[chip] << " hg " <<  hg_injCh[chip][goodEventCount_chip[chip]] << " lg " << lg_injCh[chip][goodEventCount_chip[chip]] << " tot " << tot_injCh[chip][goodEventCount_chip[chip]] << endl;
 #endif
-	
-	
-	if(hg_injCh[chip][goodEventCount_chip[chip]] > HGTP[chip][injCh] && HGTP_flag[chip] == false){
-	    HGTP_flag[chip] = true;
-	    HGLGfitmax[chip] = lg_injCh[chip][goodEventCount_chip[chip]];
-	}
-	if(lg_injCh[chip][goodEventCount_chip[chip]] > LGTP[chip][injCh] && LGTP_flag[chip] == false){
-	    LGTP_flag[chip] = true;
-	    TOTLGfitmax[chip] = tot_injCh[chip][goodEventCount_chip[chip]];
-	}
-	
+
+
+        if(hg_injCh[chip][goodEventCount_chip[chip]] > HGTP[chip][injCh] && HGTP_flag[chip] == false){
+            HGTP_flag[chip] = true;
+            HGLGfitmax[chip] = lg_injCh[chip][goodEventCount_chip[chip]];
+        }
+        if(lg_injCh[chip][goodEventCount_chip[chip]] > LGTP[chip][injCh] && LGTP_flag[chip] == false){
+            LGTP_flag[chip] = true;
+            TOTLGfitmax[chip] = tot_injCh[chip][goodEventCount_chip[chip]];
+        }
+
     }
     for ( int ichip = 0; ichip < NCHIP; ichip++ ) {
-	for( int i = 0; i < goodEventCount_chip[ichip]; i++ ){
-	    cout << dac_ctrl[ichip][i] << "  " << hg_injCh[ichip][i] << " " << lg_injCh[ichip][i] << " " << tot_injCh[ichip][i] << endl;
-	}
+        for( int i = 0; i < goodEventCount_chip[ichip]; i++ ){
+            cout << dac_ctrl[ichip][i] << "  " << hg_injCh[ichip][i] << " " << lg_injCh[ichip][i] << " " << tot_injCh[ichip][i] << endl;
+        }
     }
   
     //==================== End Loop ====================
@@ -1234,43 +1234,43 @@ void makePlots::Gain_factor_producer(){
     TGraph** TOT2LG = new TGraph*[NCHIP];
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
-	/*
-	gh[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &hg_injCh[ichip][0] );
-	gl[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &lg_injCh[ichip][0]);
-	gtot[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &tot_injCh[ichip][0]);
-	LG2HG[ichip] = new TGraph( goodEventCount_chip[ichip], &lg_injCh[ichip][0], &hg_injCh[ichip][0]);
-	TOT2LG[ichip] = new TGraph( goodEventCount_chip[ichip], &tot_injCh[ichip][0], &lg_injCh[ichip][0]);
+        /*
+          gh[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &hg_injCh[ichip][0] );
+          gl[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &lg_injCh[ichip][0]);
+          gtot[ichip] = new TGraph( goodEventCount_chip[ichip], &dac_ctrl[ichip][0], &tot_injCh[ichip][0]);
+          LG2HG[ichip] = new TGraph( goodEventCount_chip[ichip], &lg_injCh[ichip][0], &hg_injCh[ichip][0]);
+          TOT2LG[ichip] = new TGraph( goodEventCount_chip[ichip], &tot_injCh[ichip][0], &lg_injCh[ichip][0]);
 
-	gtot[ichip]->Fit("pol1","ROB","",fitmin = 1000,fitmax = 3000);
-	gtot[ichip]->GetFunction("pol1")->SetLineColor(3);
-	LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = 200);
-	//LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = HGLGfitmax[ichip]);
-	LG2HG[ichip]->GetFunction("pol1")->SetLineColor(3);
-	//TOT2LG[ichip]->Fit("pol1","","",fitmin = TOTOffSet,fitmax = TOTLGfitmax[ichip]);
-	TOT2LG[ichip]->Fit("pol1","ROB","",fitmin = 200,fitmax = 400);
-	TOT2LG[ichip]->GetFunction("pol1")->SetLineColor(3);
+          gtot[ichip]->Fit("pol1","ROB","",fitmin = 1000,fitmax = 3000);
+          gtot[ichip]->GetFunction("pol1")->SetLineColor(3);
+          LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = 200);
+          //LG2HG[ichip]->Fit("pol1","","",fitmin = 0,fitmax = HGLGfitmax[ichip]);
+          LG2HG[ichip]->GetFunction("pol1")->SetLineColor(3);
+          //TOT2LG[ichip]->Fit("pol1","","",fitmin = TOTOffSet,fitmax = TOTLGfitmax[ichip]);
+          TOT2LG[ichip]->Fit("pol1","ROB","",fitmin = 200,fitmax = 400);
+          TOT2LG[ichip]->GetFunction("pol1")->SetLineColor(3);
 
-	TF1* Linear_fit_LG2HG = LG2HG[ichip]->GetFunction("pol1");
-	TF1* Linear_fit_TOT2LG = TOT2LG[ichip]->GetFunction("pol1");
-	LG2HG_Conversion[ichip][injCh] = Linear_fit_LG2HG->GetParameter(1);
-	TOT2LG_Conversion[ichip][injCh] = Linear_fit_TOT2LG->GetParameter(1);
-	TOTOffSet[ichip][injCh] = -Linear_fit_TOT2LG->GetParameter(0)/Linear_fit_TOT2LG->GetParameter(1);
-	cout << LG2HG_Conversion[ichip][injCh] << " " <<  TOT2LG_Conversion[ichip][injCh] << " " << TOTOffSet[ichip][injCh] << endl;
-	sprintf(pltTit,"HG_Chip%d",ichip);
-	P.GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
+          TF1* Linear_fit_LG2HG = LG2HG[ichip]->GetFunction("pol1");
+          TF1* Linear_fit_TOT2LG = TOT2LG[ichip]->GetFunction("pol1");
+          LG2HG_Conversion[ichip][injCh] = Linear_fit_LG2HG->GetParameter(1);
+          TOT2LG_Conversion[ichip][injCh] = Linear_fit_TOT2LG->GetParameter(1);
+          TOTOffSet[ichip][injCh] = -Linear_fit_TOT2LG->GetParameter(0)/Linear_fit_TOT2LG->GetParameter(1);
+          cout << LG2HG_Conversion[ichip][injCh] << " " <<  TOT2LG_Conversion[ichip][injCh] << " " << TOTOffSet[ichip][injCh] << endl;
+          sprintf(pltTit,"HG_Chip%d",ichip);
+          P.GStd(*gh[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
 
-	sprintf(pltTit,"LG_Chip%d",ichip);
-	P.GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
+          sprintf(pltTit,"LG_Chip%d",ichip);
+          P.GStd(*gl[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
 
-	sprintf(pltTit,"TOT_Chip%d",ichip);
-	P.GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
+          sprintf(pltTit,"TOT_Chip%d",ichip);
+          P.GStd(*gtot[ichip], pltTit, Xtit = "DAC", Ytit = "ADC", Opt = "AP", Wait = 1, SavePlot = 1);
     
-	sprintf(pltTit,"LG2HG_Chip%d",ichip);
-	P.GStd(*LG2HG[ichip], pltTit, Xtit = "LG", Ytit = "HG", Opt = "AP", Wait = 1, SavePlot = 1);
+          sprintf(pltTit,"LG2HG_Chip%d",ichip);
+          P.GStd(*LG2HG[ichip], pltTit, Xtit = "LG", Ytit = "HG", Opt = "AP", Wait = 1, SavePlot = 1);
     
-	sprintf(pltTit,"TOT2LG_Chip%d",ichip);
-	P.GStd(*TOT2LG[ichip], pltTit, Xtit = "TOT", Ytit = "LG", Opt = "AP", Wait = 1, SavePlot = 1);
-	*/
+          sprintf(pltTit,"TOT2LG_Chip%d",ichip);
+          P.GStd(*TOT2LG[ichip], pltTit, Xtit = "TOT", Ytit = "LG", Opt = "AP", Wait = 1, SavePlot = 1);
+        */
     }
 }
 
@@ -1282,61 +1282,61 @@ void makePlots::Crosstalk(Int_t CH){
     TCanvas* c1 = new TCanvas();
     for(int ichip = 0; ichip < NCHIP; ichip++){
     
-	int cross_num = 6;
-	int formatInj_Ch = CH/2+ichip*32;
-	float Xdist = 0.974452;
-	float Ydist = 0.5626;
-	float cross_posx[cross_num], cross_posy[cross_num];
-	float X = CHmap[formatInj_Ch].first;
-	float Y = CHmap[formatInj_Ch].second;
+        int cross_num = 6;
+        int formatInj_Ch = CH/2+ichip*32;
+        float Xdist = 0.974452;
+        float Ydist = 0.5626;
+        float cross_posx[cross_num], cross_posy[cross_num];
+        float X = CHmap[formatInj_Ch].first;
+        float Y = CHmap[formatInj_Ch].second;
   
-	cross_posx[0] = X - Xdist;
-	cross_posy[0] = Y + Ydist;
-	cross_posx[1] = X;
-	cross_posy[1] = Y + 2*Ydist;
-	cross_posx[2] = X + Xdist;
-	cross_posy[2] = Y + Ydist;
-	cross_posx[3] = X + Xdist;
-	cross_posy[3] = Y - Ydist;
-	cross_posx[4] = X;
-	cross_posy[4] = Y - 2*Ydist;
-	cross_posx[5] = X - Xdist;
-	cross_posy[5] = Y - Ydist;
-		
-	cout << "Chip" << ichip << " FirstRing Channels = " ;
-	for(int icross = 0; icross < 6; icross++){
-	    //cout << cross_posx[i] << " " << cross_posy[i] << endl;
-	    int ch = 0;
-	    bool good_channel = true;
-	    while(abs(CHmap[ch].first-cross_posx[icross]) > 1e-4 || abs(CHmap[ch].second-cross_posy[icross]) > 1e-4){
-		if( ch > 127) {
-		    good_channel = false;
-		    break;
-		}
-		ch++;	    
-		//cout << ch << " "<<abs(CHmap[ch].first - cross_posx[i])<< " " << abs(CHmap[ch].second - cross_posy[i])<< endl;
-		/*
-		  forCH = chip*32 + cross_ch[i]/2;
-		  X = CHmap[forCH].first;
-		  Y = CHmap[forCH].second;	      
-		  poly->Fill(X,Y,cross_ch[i]);
-		*/
+        cross_posx[0] = X - Xdist;
+        cross_posy[0] = Y + Ydist;
+        cross_posx[1] = X;
+        cross_posy[1] = Y + 2*Ydist;
+        cross_posx[2] = X + Xdist;
+        cross_posy[2] = Y + Ydist;
+        cross_posx[3] = X + Xdist;
+        cross_posy[3] = Y - Ydist;
+        cross_posx[4] = X;
+        cross_posy[4] = Y - 2*Ydist;
+        cross_posx[5] = X - Xdist;
+        cross_posy[5] = Y - Ydist;
+
+        cout << "Chip" << ichip << " FirstRing Channels = " ;
+        for(int icross = 0; icross < 6; icross++){
+            //cout << cross_posx[i] << " " << cross_posy[i] << endl;
+            int ch = 0;
+            bool good_channel = true;
+            while(abs(CHmap[ch].first-cross_posx[icross]) > 1e-4 || abs(CHmap[ch].second-cross_posy[icross]) > 1e-4){
+                if( ch > 127) {
+                    good_channel = false;
+                    break;
+                }
+                ch++;
+                //cout << ch << " "<<abs(CHmap[ch].first - cross_posx[i])<< " " << abs(CHmap[ch].second - cross_posy[i])<< endl;
+                /*
+                  forCH = chip*32 + cross_ch[i]/2;
+                  X = CHmap[forCH].first;
+                  Y = CHmap[forCH].second;
+                  poly->Fill(X,Y,cross_ch[i]);
+                */
       
-	    }
-	    cross_ch_FirstRing[ichip][icross] = ch * 2;
-	    cout << cross_ch_FirstRing[ichip][icross] << " " ;
-	}
-	cout << endl;
+            }
+            cross_ch_FirstRing[ichip][icross] = ch * 2;
+            cout << cross_ch_FirstRing[ichip][icross] << " " ;
+        }
+        cout << endl;
     }
     cout << endl;
     TH2Poly *poly = new TH2Poly;
     InitTH2Poly(*poly);
     /*  
-	for(int i=0; i<6; i++){
-	poly->Draw("colztext0");
-	c1->Update();
-	//gPad->WaitPrimitive();
-	}
+        for(int i=0; i<6; i++){
+        poly->Draw("colztext0");
+        c1->Update();
+        //gPad->WaitPrimitive();
+        }
     */
     delete c1;
   
@@ -1352,12 +1352,12 @@ void makePlots::init_outputFile() {
 
     integrate_flag = false;
     if ( integrate_flag ) {
-	sprintf(title,"root_plot/%s.root",moduleNumber.c_str());
-	outfile = new TFile(title,"update");
+        sprintf(title,"root_plot/%s.root",moduleNumber.c_str());
+        outfile = new TFile(title,"update");
     }
     else {
-	sprintf(title,"root_plot/plot_%s.root",outf.c_str());
-	outfile = new TFile(title,"recreate");
+        sprintf(title,"root_plot/plot_%s.root",outf.c_str());
+        outfile = new TFile(title,"recreate");
     }
     char output_filename[200];
     sprintf(output_filename,"%s",title);
@@ -1396,71 +1396,71 @@ void makePlots::init_analysisParameter() {
     hgSigma         = new float*[NCHANNEL];
     lgSigma         = new float*[NCHANNEL];
     for(int i = 0; i < NCHANNEL; i++){
-	hg_allCh[i]        = new double[Nevents];
-	lg_allCh[i]        = new double[Nevents];
-	tot_allCh[i]       = new double[Nevents];
-	toaf_allCh[i]      = new double[Nevents];
-	toar_allCh[i]      = new double[Nevents];
-	toaf_r_allCh[i]    = new double[Nevents];
-	mip_allCh[i]       = new double[Nevents];
-	mip_allCh_goodEvent[i]       = new double[Nevents];
-	XTalkCoupling[i]   = new double[Nevents];
-	hgFitMean[i]       = new double[NSCA];
-	hgFitSigma[i]      = new double[NSCA];
-	hgFitChisquare[i]  = new double[NSCA];
-	lgFitMean[i]       = new double[NSCA];
-	lgFitSigma[i]      = new double[NSCA];
-	lgFitChisquare[i]  = new double[NSCA];
-	hgMean[i]          = new float[NSCA];
-	lgMean[i]          = new float[NSCA];
-	hgSigma[i]         = new float[NSCA];
-	lgSigma[i]         = new float[NSCA];
+        hg_allCh[i]        = new double[Nevents];
+        lg_allCh[i]        = new double[Nevents];
+        tot_allCh[i]       = new double[Nevents];
+        toaf_allCh[i]      = new double[Nevents];
+        toar_allCh[i]      = new double[Nevents];
+        toaf_r_allCh[i]    = new double[Nevents];
+        mip_allCh[i]       = new double[Nevents];
+        mip_allCh_goodEvent[i]       = new double[Nevents];
+        XTalkCoupling[i]   = new double[Nevents];
+        hgFitMean[i]       = new double[NSCA];
+        hgFitSigma[i]      = new double[NSCA];
+        hgFitChisquare[i]  = new double[NSCA];
+        lgFitMean[i]       = new double[NSCA];
+        lgFitSigma[i]      = new double[NSCA];
+        lgFitChisquare[i]  = new double[NSCA];
+        hgMean[i]          = new float[NSCA];
+        lgMean[i]          = new float[NSCA];
+        hgSigma[i]         = new float[NSCA];
+        lgSigma[i]         = new float[NSCA];
     }
     hg_SubPed = new double*[NSCA];
     lg_SubPed = new double*[NSCA];
     for(int i = 0; i < NSCA; i++){
-	hg_SubPed[i] = new double[NCH];
-	lg_SubPed[i] = new double[NCH];
+        hg_SubPed[i] = new double[NCH];
+        lg_SubPed[i] = new double[NCH];
     }
     hg_SubPedCM = new double*[NCH];
     lg_SubPedCM = new double*[NCH];
     for(int i = 0; i < NCH; i++){
-	hg_SubPedCM[i] = new double[NSCA];
-	lg_SubPedCM[i] = new double[NSCA];
+        hg_SubPedCM[i] = new double[NSCA];
+        lg_SubPedCM[i] = new double[NSCA];
     }
     mip_Ring_4Chip           = new double**[NRings];
     XTalkCoupling_Ring_4Chip = new double**[NRings];
     for(int i = 0; i < NRings; i++){
-	mip_Ring_4Chip[i]           = new double*[NCHIP];
-	XTalkCoupling_Ring_4Chip[i] = new double*[NCHIP];
-	for(int j = 0; j < NCHIP; j++){
-	    mip_Ring_4Chip[i][j]           = new double[Nevents];
-	    XTalkCoupling_Ring_4Chip[i][j] = new double[Nevents];
-	}
+        mip_Ring_4Chip[i]           = new double*[NCHIP];
+        XTalkCoupling_Ring_4Chip[i] = new double*[NCHIP];
+        for(int j = 0; j < NCHIP; j++){
+            mip_Ring_4Chip[i][j]           = new double[Nevents];
+            XTalkCoupling_Ring_4Chip[i][j] = new double[Nevents];
+        }
     }
     mip_Ring_1Chip           = new double*[NRings];
     XTalkCoupling_Ring_1Chip = new double*[NRings];
     for(int i = 0; i < NRings; i++){
-	mip_Ring_1Chip[i]           = new double[Nevents];
-	XTalkCoupling_Ring_1Chip[i] = new double[Nevents];
+        mip_Ring_1Chip[i]           = new double[Nevents];
+        XTalkCoupling_Ring_1Chip[i] = new double[Nevents];
     }
 
     hg_sig = new double*[NCH];
     lg_sig = new double*[NCH];
     for(int i = 0; i < NCH; i++){
-	hg_sig[i] = new double[NSCA];
-	lg_sig[i] = new double[NSCA];
+        hg_sig[i] = new double[NSCA];
+        lg_sig[i] = new double[NSCA];
     }
 
     
     for( int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
-	XTalkCoupling_Average[ichannel] = 0;
+        XTalkCoupling_Average[ichannel] = 0;
     }
     XTalkCoupling_Ring_1Chip_average = 0;
     ringChannelCount = 0;
     goodEventCount = 0;
     for( int ichip = 0; ichip < NCHIP; ichip++) {
-	goodEventCount_chip[ichip] = 0;
+        goodEventCount_chip[ichip] = 0;
     }
 
     cout << "Finish initializing parameters" << endl;
@@ -1546,20 +1546,20 @@ void makePlots::init_rootDir() {
     
     /// Declare TDirectories
     if ( acquisitionType == "standard" ) {
-	sprintf(title,"Pedestal_Run");
-	cdinjCh = outfile->mkdir(title);
+        sprintf(title,"Pedestal_Run");
+        cdinjCh = outfile->mkdir(title);
     }
     else if ( acquisitionType == "sweep" || acquisitionType == "const_inj" ) {
-	if( !oneChannelInjection_flag )
-	    sprintf(title,"InjCh%d",injCh);
-	else 
-	    sprintf(title,"InjCh%d_InjChip%d",injCh, injChip);
+        if( !oneChannelInjection_flag )
+            sprintf(title,"InjCh%d",injCh);
+        else
+            sprintf(title,"InjCh%d_InjChip%d",injCh, injChip);
 
-	cdinjCh = outfile->mkdir(title);
+        cdinjCh = outfile->mkdir(title);
     }
     else if ( acquisitionType == "external_trigger" ) {
-	sprintf(title,"External_trigger");
-	cdinjCh = outfile->mkdir(title);
+        sprintf(title,"External_trigger");
+        cdinjCh = outfile->mkdir(title);
     }
     
     cdallCh = cdinjCh->mkdir("allCh_hglgtot");
@@ -1585,27 +1585,27 @@ void makePlots::init_histo() {
     /// Initialize Histograms
     char h_title[50];
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel++) {
-	for(int sca = 0; sca < NSCA; ++sca) {
-	    cdhglgPedestal->cd();
-	    sprintf(h_title,"h_hgPedestal_Ch%d_SCA%d", ichannel, sca);
-	    h_hgPedestal[sca][ichannel] = new TH1D(h_title,h_title,500,-500,500); 
-	    sprintf(h_title,"h_lgPedestal_Ch%d_SCA%d", ichannel, sca);
-	    h_lgPedestal[sca][ichannel] = new TH1D(h_title,h_title,500,-500,500);
-	}
-	cdtot->cd();
-	sprintf(h_title,"h_tot_Ch%d", ichannel);
-	h_tot[ichannel] = new TH1D(h_title,h_title,150,0,3000);
-	sprintf(h_title,"h_toarise_Ch%d", ichannel);
-	h_toarise[ichannel] = new TH1D(h_title,h_title,150,0,3000);
-	sprintf(h_title,"h_toafall_Ch%d", ichannel);
-	h_toafall[ichannel] = new TH1D(h_title,h_title,150,0,3000);
-	sprintf(h_title,"h_toaf_r_Ch%d", ichannel);
-	h_toaf_r[ichannel] = new TH1D(h_title,h_title,200,700,1200);
-	cdmip->cd();
-	sprintf(h_title,"h_mip_Ch%d", ichannel);
-	h_mip[ichannel] = new TH1D(h_title,h_title,150,0,300);
-	sprintf(h_title,"h_xtalkCoupling_Ch%d", ichannel);
-	h_xtalkCoupling[ichannel] = new TH1D(h_title,h_title,201,-1,1.01);
+        for(int sca = 0; sca < NSCA; ++sca) {
+            cdhglgPedestal->cd();
+            sprintf(h_title,"h_hgPedestal_Ch%d_SCA%d", ichannel, sca);
+            h_hgPedestal[sca][ichannel] = new TH1D(h_title,h_title,500,-500,500);
+            sprintf(h_title,"h_lgPedestal_Ch%d_SCA%d", ichannel, sca);
+            h_lgPedestal[sca][ichannel] = new TH1D(h_title,h_title,500,-500,500);
+        }
+        cdtot->cd();
+        sprintf(h_title,"h_tot_Ch%d", ichannel);
+        h_tot[ichannel] = new TH1D(h_title,h_title,150,0,3000);
+        sprintf(h_title,"h_toarise_Ch%d", ichannel);
+        h_toarise[ichannel] = new TH1D(h_title,h_title,150,0,3000);
+        sprintf(h_title,"h_toafall_Ch%d", ichannel);
+        h_toafall[ichannel] = new TH1D(h_title,h_title,150,0,3000);
+        sprintf(h_title,"h_toaf_r_Ch%d", ichannel);
+        h_toaf_r[ichannel] = new TH1D(h_title,h_title,200,700,1200);
+        cdmip->cd();
+        sprintf(h_title,"h_mip_Ch%d", ichannel);
+        h_mip[ichannel] = new TH1D(h_title,h_title,150,0,300);
+        sprintf(h_title,"h_xtalkCoupling_Ch%d", ichannel);
+        h_xtalkCoupling[ichannel] = new TH1D(h_title,h_title,201,-1,1.01);
     }
     cdinj->cd();
     sprintf(h_title,"h_xtalkCoupling_injCh%d", injCh);
@@ -1619,24 +1619,24 @@ void makePlots::fit_const_inj_Histo() {
     
     /// Fit 
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-	
-	h_mip[ichannel]->Fit("gaus","Q");
-	mipFitMean [ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(1);
-	mipFitSigma[ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(2);
-	mipFitChisquare[ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetChisquare();
 
-	h_xtalkCoupling[ichannel]->Fit("gaus","Q");
-	xtalkCouplingFitMean [ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetParameter(1);
-	xtalkCouplingFitSigma[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetParameter(2);
-	xtalkCouplingFitChisquare[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetChisquare();
+        h_mip[ichannel]->Fit("gaus","Q");
+        mipFitMean [ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(1);
+        mipFitSigma[ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetParameter(2);
+        mipFitChisquare[ichannel] = h_mip[ichannel]->GetFunction("gaus")->GetChisquare();
+
+        h_xtalkCoupling[ichannel]->Fit("gaus","Q");
+        xtalkCouplingFitMean [ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetParameter(1);
+        xtalkCouplingFitSigma[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetParameter(2);
+        xtalkCouplingFitChisquare[ichannel] = h_xtalkCoupling[ichannel]->GetFunction("gaus")->GetChisquare();
 
 #ifdef DEBUG
-	//if ( hgFitMean[ichannel][sca] > 200 ) 
-	cout << " ichannel " << ichannel
-	     << " Mean " << mipFitMean[ichannel] << " Sigma " << mipFitSigma[ichannel] << " Chi " << mipFitChisquare[ichannel]
-	     << " Mean " << xtalkCouplingFitMean[ichannel] << " Sigma " << xtalkCouplingFitSigma[ichannel] << " Chi " << xtalkCouplingFitChisquare[ichannel]
-	     << endl;
-	//<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
+        //if ( hgFitMean[ichannel][sca] > 200 )
+        cout << " ichannel " << ichannel
+             << " Mean " << mipFitMean[ichannel] << " Sigma " << mipFitSigma[ichannel] << " Chi " << mipFitChisquare[ichannel]
+             << " Mean " << xtalkCouplingFitMean[ichannel] << " Sigma " << xtalkCouplingFitSigma[ichannel] << " Chi " << xtalkCouplingFitChisquare[ichannel]
+             << endl;
+        //<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
 #endif
       
     }
@@ -1644,32 +1644,32 @@ void makePlots::fit_const_inj_Histo() {
 
 void makePlots::fit_pedestalHisto() {
     
-        /// Fit 
+    /// Fit
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-	
-	for (int sca = 0; sca < NSCA; sca++){
-	    if (ichannel%2 == 1) continue;
-	    h_hgPedestal[sca][ichannel]->Fit("gaus","Q","",-100,100);
-	    hgFitMean [ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
-	    hgFitSigma[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
-	    hgFitChisquare[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetChisquare();
-	    
-	    h_lgPedestal[sca][ichannel]->Fit("gaus","Q","",-100,100);
-	    lgFitMean [ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
-	    lgFitSigma[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
-	    lgFitChisquare[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetChisquare();
+
+        for (int sca = 0; sca < NSCA; sca++){
+            if (ichannel%2 == 1) continue;
+            h_hgPedestal[sca][ichannel]->Fit("gaus","Q","",-100,100);
+            hgFitMean [ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
+            hgFitSigma[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
+            hgFitChisquare[ichannel][sca] = h_hgPedestal[sca][ichannel]->GetFunction("gaus")->GetChisquare();
+
+            h_lgPedestal[sca][ichannel]->Fit("gaus","Q","",-100,100);
+            lgFitMean [ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(1);
+            lgFitSigma[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetParameter(2);
+            lgFitChisquare[ichannel][sca] = h_lgPedestal[sca][ichannel]->GetFunction("gaus")->GetChisquare();
 
 #ifdef DEBUG
-	    //if ( hgFitMean[ichannel][sca] > 200 ) 
-		cout << " ichannel " << ichannel << " sca " << sca
-		     << " Mean " << hgFitMean[ichannel][sca] << " Sigma " << hgFitSigma[ichannel][sca] << " Chi " << hgFitChisquare[ichannel][sca]
-		     << " Mean " << lgFitMean[ichannel][sca] << " Sigma " << lgFitSigma[ichannel][sca] << " Chi " << lgFitChisquare[ichannel][sca]
-		     << endl;
-		    //<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
+            //if ( hgFitMean[ichannel][sca] > 200 )
+            cout << " ichannel " << ichannel << " sca " << sca
+                 << " Mean " << hgFitMean[ichannel][sca] << " Sigma " << hgFitSigma[ichannel][sca] << " Chi " << hgFitChisquare[ichannel][sca]
+                 << " Mean " << lgFitMean[ichannel][sca] << " Sigma " << lgFitSigma[ichannel][sca] << " Chi " << lgFitChisquare[ichannel][sca]
+                 << endl;
+            //<< " Chi " << hgFitChisquare[ichannel][sca]<< endl;
 #endif
       
 
-	}
+        }
     }
     
 }
@@ -1686,81 +1686,81 @@ void makePlots::Pedestal_poly() {
     TH2Poly *polyhgChi[NSCA];
     TH2Poly *polylgChi[NSCA];
     for (int sca = 0; sca < NSCA; sca++){
-	cdhgPedestal->cd();
-	polyhgPed[sca] = new TH2Poly();
-	InitTH2Poly(*polyhgPed[sca]);
-	sprintf(title,"hgPedestal_SCA%d",sca);
-	polyhgPed[sca]->SetTitle(title);
-	polyhgPed[sca]->SetName(title);
-	polyhgPed[sca]->SetMarkerSize(1);
+        cdhgPedestal->cd();
+        polyhgPed[sca] = new TH2Poly();
+        InitTH2Poly(*polyhgPed[sca]);
+        sprintf(title,"hgPedestal_SCA%d",sca);
+        polyhgPed[sca]->SetTitle(title);
+        polyhgPed[sca]->SetName(title);
+        polyhgPed[sca]->SetMarkerSize(1);
 
-	cdhgNoise->cd();
-	polyhgErr[sca] = new TH2Poly();
-	InitTH2Poly(*polyhgErr[sca]);
-	sprintf(title,"hgSigma_SCA%d",sca);
-	polyhgErr[sca]->SetTitle(title);
-	polyhgErr[sca]->SetName(title);
-	polyhgErr[sca]->SetMarkerSize(1);
+        cdhgNoise->cd();
+        polyhgErr[sca] = new TH2Poly();
+        InitTH2Poly(*polyhgErr[sca]);
+        sprintf(title,"hgSigma_SCA%d",sca);
+        polyhgErr[sca]->SetTitle(title);
+        polyhgErr[sca]->SetName(title);
+        polyhgErr[sca]->SetMarkerSize(1);
 
-	cdhgChi->cd();
-	polyhgChi[sca] = new TH2Poly();
-	InitTH2Poly(*polyhgChi[sca]);
-	sprintf(title,"hgChisquare_SCA%d",sca);
-	polyhgChi[sca]->SetTitle(title);
-	polyhgChi[sca]->SetName(title);
-	polyhgChi[sca]->SetMarkerSize(1);
-	
-	cdlgPedestal->cd();
-	polylgPed[sca] = new TH2Poly();
-	InitTH2Poly(*polylgPed[sca]);
-	sprintf(title,"lgPedestal_SCA%d",sca);
-	polylgPed[sca]->SetTitle(title);
-	polylgPed[sca]->SetName(title);
-	polylgPed[sca]->SetMarkerSize(1);
+        cdhgChi->cd();
+        polyhgChi[sca] = new TH2Poly();
+        InitTH2Poly(*polyhgChi[sca]);
+        sprintf(title,"hgChisquare_SCA%d",sca);
+        polyhgChi[sca]->SetTitle(title);
+        polyhgChi[sca]->SetName(title);
+        polyhgChi[sca]->SetMarkerSize(1);
 
-	cdlgNoise->cd();
-	polylgErr[sca] = new TH2Poly();
-	InitTH2Poly(*polylgErr[sca]);
-	sprintf(title,"lgSigma_SCA%d",sca);
-	polylgErr[sca]->SetTitle(title);
-	polylgErr[sca]->SetName(title);
-	polylgErr[sca]->SetMarkerSize(1);
+        cdlgPedestal->cd();
+        polylgPed[sca] = new TH2Poly();
+        InitTH2Poly(*polylgPed[sca]);
+        sprintf(title,"lgPedestal_SCA%d",sca);
+        polylgPed[sca]->SetTitle(title);
+        polylgPed[sca]->SetName(title);
+        polylgPed[sca]->SetMarkerSize(1);
 
-	cdlgChi->cd();
-	polylgChi[sca] = new TH2Poly();
-	InitTH2Poly(*polylgChi[sca]);
-	sprintf(title,"lgChisquare_SCA%d",sca);
-	polylgChi[sca]->SetTitle(title);
-	polylgChi[sca]->SetName(title);
-	polylgChi[sca]->SetMarkerSize(1);
+        cdlgNoise->cd();
+        polylgErr[sca] = new TH2Poly();
+        InitTH2Poly(*polylgErr[sca]);
+        sprintf(title,"lgSigma_SCA%d",sca);
+        polylgErr[sca]->SetTitle(title);
+        polylgErr[sca]->SetName(title);
+        polylgErr[sca]->SetMarkerSize(1);
+
+        cdlgChi->cd();
+        polylgChi[sca] = new TH2Poly();
+        InitTH2Poly(*polylgChi[sca]);
+        sprintf(title,"lgChisquare_SCA%d",sca);
+        polylgChi[sca]->SetTitle(title);
+        polylgChi[sca]->SetName(title);
+        polylgChi[sca]->SetMarkerSize(1);
 
     }
 
     for(int sca = 0; sca < NSCA; sca++){
-	for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-	    float X, Y;
-	    int forCH = ichannel / 2;
-	    X = CHmap[forCH].first;
-	    Y = CHmap[forCH].second;
-	    polyhgPed[sca]->Fill( X, Y, (int)hgFitMean [ichannel][sca]);
-	    polyhgErr[sca]->Fill( X, Y, (int)hgFitSigma[ichannel][sca]);
-	    polyhgChi[sca]->Fill( X, Y, (int)lgFitChisquare[ichannel][sca]);
-	    polylgPed[sca]->Fill( X, Y, (int)lgFitMean [ichannel][sca]);
-	    polylgErr[sca]->Fill( X, Y, (int)lgFitSigma[ichannel][sca]);
-	    polylgChi[sca]->Fill( X, Y, (int)lgFitChisquare[ichannel][sca]);
-	}
-	cdhgPedestal->cd();
-	polyhgPed[sca]->Write();
-	cdlgPedestal->cd();
-	polylgPed[sca]->Write();
-	cdhgNoise->cd();
-	polyhgErr[sca]->Write();
-	cdlgNoise->cd();
-	polylgErr[sca]->Write();
-	cdhgChi->cd();
-	polyhgChi[sca]->Write();
-	cdlgChi->cd();
-	polylgChi[sca]->Write();
+        for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
+            float X, Y;
+            int forCH = ichannel / 2;
+            X = CHmap[forCH].first;
+            Y = CHmap[forCH].second;
+            polyhgPed[sca]->Fill( X, Y, (int)hgFitMean [ichannel][sca]);
+            polyhgErr[sca]->Fill( X, Y, (int)hgFitSigma[ichannel][sca]);
+            polyhgChi[sca]->Fill( X, Y, (int)lgFitChisquare[ichannel][sca]);
+            polylgPed[sca]->Fill( X, Y, (int)lgFitMean [ichannel][sca]);
+            polylgErr[sca]->Fill( X, Y, (int)lgFitSigma[ichannel][sca]);
+            polylgChi[sca]->Fill( X, Y, (int)lgFitChisquare[ichannel][sca]);
+        }
+        cdhgPedestal->cd();
+        polyhgPed[sca]->Write();
+        cdlgPedestal->cd();
+        polylgPed[sca]->Write();
+        cdhgNoise->cd();
+        polyhgErr[sca]->Write();
+        cdlgNoise->cd();
+        polylgErr[sca]->Write();
+        cdhgChi->cd();
+        polyhgChi[sca]->Write();
+        cdlgChi->cd();
+        polylgChi[sca]->Write();
     }
 
 }
@@ -1775,55 +1775,55 @@ void makePlots::injectionPlots(){
     TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
 
     for(int ichip = 0; ichip < NCHIP; ichip++){
-	int inj_channel = (ichip*64) + injCh;
-	
-	TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[inj_channel] );
-	sprintf(title,"hg");
-	ginjCh_hg->SetTitle(title);
-	ginjCh_hg->SetName(title);
-	ginjCh_hg->SetMarkerColor(P.Color(0));
-	TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[inj_channel] );
-	sprintf(title,"lg");
-	ginjCh_lg->SetTitle(title);
-	ginjCh_lg->SetName(title);
-	ginjCh_lg->SetMarkerColor(P.Color(1));
-	TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[inj_channel] );
-	sprintf(title,"tot");
-	ginjCh_tot->SetTitle(title);
-	ginjCh_tot->SetName(title);
-	ginjCh_tot->SetMarkerColor(P.Color(2));
-	TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[inj_channel] );
-	sprintf(title,"mip_InjCh%d_chip%d", injCh, ichip);
-	ginjCh_mip->SetTitle(title);
-	ginjCh_mip->SetName(title);
-	ginjCh_mip->Write();
-	
-	TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
-	multig_InjCh_hltot->Add(ginjCh_hg);
-	multig_InjCh_hltot->Add(ginjCh_lg);
-	multig_InjCh_hltot->Add(ginjCh_tot);
-	sprintf(title,"hglgtot_InjCh%d_chip%d", injCh, ichip);
-	multig_InjCh_hltot->SetTitle(title);
-	multig_InjCh_hltot->SetName(title);
-	multig_InjCh_hltot->Write();
+        int inj_channel = (ichip*64) + injCh;
+
+        TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[inj_channel] );
+        sprintf(title,"hg");
+        ginjCh_hg->SetTitle(title);
+        ginjCh_hg->SetName(title);
+        ginjCh_hg->SetMarkerColor(P.Color(0));
+        TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[inj_channel] );
+        sprintf(title,"lg");
+        ginjCh_lg->SetTitle(title);
+        ginjCh_lg->SetName(title);
+        ginjCh_lg->SetMarkerColor(P.Color(1));
+        TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[inj_channel] );
+        sprintf(title,"tot");
+        ginjCh_tot->SetTitle(title);
+        ginjCh_tot->SetName(title);
+        ginjCh_tot->SetMarkerColor(P.Color(2));
+        TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[inj_channel] );
+        sprintf(title,"mip_InjCh%d_chip%d", injCh, ichip);
+        ginjCh_mip->SetTitle(title);
+        ginjCh_mip->SetName(title);
+        ginjCh_mip->Write();
+
+        TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
+        multig_InjCh_hltot->Add(ginjCh_hg);
+        multig_InjCh_hltot->Add(ginjCh_lg);
+        multig_InjCh_hltot->Add(ginjCh_tot);
+        sprintf(title,"hglgtot_InjCh%d_chip%d", injCh, ichip);
+        multig_InjCh_hltot->SetTitle(title);
+        multig_InjCh_hltot->SetName(title);
+        multig_InjCh_hltot->Write();
 
 
-	/// Xtalk vs dac_ctrl
-	for(int iring = 1; iring < 2; iring++){
-	    TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
-	    sprintf(title,"chip%d", ichip);
-	    gXTalkCoupling->SetTitle(title);
-	    gXTalkCoupling->SetName(title);
-	    gXTalkCoupling->SetMarkerColor(P.Color(ichip));
-	    gXTalkCoupling->SetLineWidth(0);
-	    gXTalkCoupling->SetFillColor(0);
-	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
-	    gXTalkCoupling->Fit("f1","R");
-	    gXTalkCoupling->Write();
-	    fit_intersept = f1->GetParameter(0);
-	    fit_slope = f1->GetParameter(1);
-	    multig_XTalkCoupling_ring->Add(gXTalkCoupling);
-	}
+        /// Xtalk vs dac_ctrl
+        for(int iring = 1; iring < 2; iring++){
+            TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_4Chip[iring][ichip] );
+            sprintf(title,"chip%d", ichip);
+            gXTalkCoupling->SetTitle(title);
+            gXTalkCoupling->SetName(title);
+            gXTalkCoupling->SetMarkerColor(P.Color(ichip));
+            gXTalkCoupling->SetLineWidth(0);
+            gXTalkCoupling->SetFillColor(0);
+            TF1 *f1 = new TF1("f1","[0]+[1]*x",0,2600);
+            gXTalkCoupling->Fit("f1","R");
+            gXTalkCoupling->Write();
+            fit_intersept = f1->GetParameter(0);
+            fit_slope = f1->GetParameter(1);
+            multig_XTalkCoupling_ring->Add(gXTalkCoupling);
+        }
     }
     sprintf(title,"EfirstRing/EInj InjCh%d", injCh);
     multig_XTalkCoupling_ring->SetTitle(title);
@@ -1885,18 +1885,18 @@ void makePlots::oneChannelInjection_injectionPlots(){
 
     TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
     for(int iring = 1; iring < 2; iring++){
-	TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
-	sprintf(title,"ring %d", iring);
-	gXTalkCoupling->SetTitle(title);
-	gXTalkCoupling->SetName(title);
-	gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
-	gXTalkCoupling->SetLineWidth(0);
-	gXTalkCoupling->SetFillColor(0);
-	TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2200);
-	gXTalkCoupling->Fit("f1","R");
-	fit_intersept = f1->GetParameter(0);
-	fit_slope = f1->GetParameter(1);
-	multig_XTalkCoupling_ring->Add(gXTalkCoupling);
+        TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
+        sprintf(title,"ring %d", iring);
+        gXTalkCoupling->SetTitle(title);
+        gXTalkCoupling->SetName(title);
+        gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
+        gXTalkCoupling->SetLineWidth(0);
+        gXTalkCoupling->SetFillColor(0);
+        TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2200);
+        gXTalkCoupling->Fit("f1","R");
+        fit_intersept = f1->GetParameter(0);
+        fit_slope = f1->GetParameter(1);
+        multig_XTalkCoupling_ring->Add(gXTalkCoupling);
     }
     sprintf(title,"XtalkCoupling_InjCh%d_chip%d", injCh, injChip);
     multig_XTalkCoupling_ring->SetTitle(title);
@@ -1917,16 +1917,16 @@ void makePlots::const_injPlots() {
     InitTH2Poly(*poly);
     poly->SetMinimum(-0.1);
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-	int ichip = ichannel / NCH;
-	float X, Y;
-	int forCH = ichannel / 2;
-	bool NoisyBool = false;
-	X = CHmap[forCH].first;
-	Y = CHmap[forCH].second;
-	if(ichannel == injCh + injChip*64 )
-	    poly->Fill(X,Y,-2); 
-	else 
-	    poly->Fill(X,Y,xtalkCouplingFitMean[ichannel]);
+        int ichip = ichannel / NCH;
+        float X, Y;
+        int forCH = ichannel / 2;
+        bool NoisyBool = false;
+        X = CHmap[forCH].first;
+        Y = CHmap[forCH].second;
+        if(ichannel == injCh + injChip*64 )
+            poly->Fill(X,Y,-2);
+        else
+            poly->Fill(X,Y,xtalkCouplingFitMean[ichannel]);
     }
     sprintf(title,"<E / EInj> InjCh%d InjChip%d", injCh, injChip);
 
@@ -1962,67 +1962,67 @@ void makePlots::injectionPlots_allCh() {
     int color = 0;
     TMultiGraph *multig = new TMultiGraph();
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-	
-	int ichip = ichannel / 64;
-	int inj_channel;
-	if (oneChannelInjection_flag)
-	    inj_channel = injChip*64 + injCh;
-	else
-	    inj_channel = (ichip*64) + injCh;
-	
-	TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[ichannel] );
-	sprintf(title,"hg");
-	ginjCh_hg->SetTitle(title);
-	ginjCh_hg->SetName(title);
-	ginjCh_hg->SetMarkerColor(P.Color(0));
-	TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[ichannel] );
-	sprintf(title,"lg");
-	ginjCh_lg->SetTitle(title);
-	ginjCh_lg->SetName(title);
-	ginjCh_lg->SetMarkerColor(P.Color(1));
-	TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[ichannel] );
-	sprintf(title,"tot");
-	ginjCh_tot->SetTitle(title);
-	ginjCh_tot->SetName(title);
-	ginjCh_tot->SetMarkerColor(P.Color(2));
-	TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[ichannel] );
-	sprintf(title,"mip_Ch%d", ichannel);
-	ginjCh_mip->SetTitle(title);
-	ginjCh_mip->SetName(title);
-	ginjCh_mip->Write();
-	
-	TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
-	multig_InjCh_hltot->Add(ginjCh_hg);
-	multig_InjCh_hltot->Add(ginjCh_lg);
-	multig_InjCh_hltot->Add(ginjCh_tot);
-	sprintf(title,"hglgtot_Ch%d", ichannel);
-	multig_InjCh_hltot->SetTitle(title);
-	multig_InjCh_hltot->SetName(title);
-	multig_InjCh_hltot->Write();
 
-	TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling[ichannel] );
-	sprintf(title,"xtalk_Ch%d", ichannel);
-	gXTalkCoupling->SetTitle(title);
-	gXTalkCoupling->SetName(title);
+        int ichip = ichannel / 64;
+        int inj_channel;
+        if (oneChannelInjection_flag)
+            inj_channel = injChip*64 + injCh;
+        else
+            inj_channel = (ichip*64) + injCh;
+
+        TGraph* ginjCh_hg  = new TGraph( Nevents, dac_ctrl, hg_allCh[ichannel] );
+        sprintf(title,"hg");
+        ginjCh_hg->SetTitle(title);
+        ginjCh_hg->SetName(title);
+        ginjCh_hg->SetMarkerColor(P.Color(0));
+        TGraph* ginjCh_lg  = new TGraph( Nevents, dac_ctrl, lg_allCh[ichannel] );
+        sprintf(title,"lg");
+        ginjCh_lg->SetTitle(title);
+        ginjCh_lg->SetName(title);
+        ginjCh_lg->SetMarkerColor(P.Color(1));
+        TGraph* ginjCh_tot = new TGraph( Nevents, dac_ctrl, tot_allCh[ichannel] );
+        sprintf(title,"tot");
+        ginjCh_tot->SetTitle(title);
+        ginjCh_tot->SetName(title);
+        ginjCh_tot->SetMarkerColor(P.Color(2));
+        TGraph* ginjCh_mip = new TGraph( Nevents, dac_ctrl, mip_allCh[ichannel] );
+        sprintf(title,"mip_Ch%d", ichannel);
+        ginjCh_mip->SetTitle(title);
+        ginjCh_mip->SetName(title);
+        ginjCh_mip->Write();
+
+        TMultiGraph *multig_InjCh_hltot = new TMultiGraph();
+        multig_InjCh_hltot->Add(ginjCh_hg);
+        multig_InjCh_hltot->Add(ginjCh_lg);
+        multig_InjCh_hltot->Add(ginjCh_tot);
+        sprintf(title,"hglgtot_Ch%d", ichannel);
+        multig_InjCh_hltot->SetTitle(title);
+        multig_InjCh_hltot->SetName(title);
+        multig_InjCh_hltot->Write();
+
+        TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling[ichannel] );
+        sprintf(title,"xtalk_Ch%d", ichannel);
+        gXTalkCoupling->SetTitle(title);
+        gXTalkCoupling->SetName(title);
+
+
+        int iring = ringPositionFinder( inj_channel, ichannel );
+        if (iring ==  1 && !noisy_flag[ichannel] ) {
+            gXTalkCoupling->SetMarkerColor(P.Color(color));
+            gXTalkCoupling->SetLineColor(P.Color(color));
+            gXTalkCoupling->SetFillColor(0);
+            gXTalkCoupling->SetMinimum(-0.01);
+            gXTalkCoupling->SetMaximum(0.05);
+            multig->Add(gXTalkCoupling);
+            TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
+            gXTalkCoupling->Fit("f1","ROB R");
+            fit_intersept = f1->GetParameter(0);
+            fit_slope = f1->GetParameter(1);
+            output_xtalkCoupling_all(false , false, ichannel);
+            color++;
+        }
 	
-	
-	int iring = ringPositionFinder( inj_channel, ichannel );
-	if (iring ==  1 && !noisy_flag[ichannel] ) {
-	    gXTalkCoupling->SetMarkerColor(P.Color(color));
-	    gXTalkCoupling->SetLineColor(P.Color(color));
-	    gXTalkCoupling->SetFillColor(0);
-	    gXTalkCoupling->SetMinimum(-0.01);
-	    gXTalkCoupling->SetMaximum(0.05);
-	    multig->Add(gXTalkCoupling);
-	    TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
-	    gXTalkCoupling->Fit("f1","ROB R");
-	    fit_intersept = f1->GetParameter(0);
-	    fit_slope = f1->GetParameter(1);
-	    output_xtalkCoupling_all(false , false, ichannel);
-	    color++;
-	}
-	
-	gXTalkCoupling->Write();
+        gXTalkCoupling->Write();
     }
 
     cdinj->cd();
@@ -2053,28 +2053,28 @@ void makePlots::XTalk_poly() {
     InitTH2Poly(*poly);
     poly->SetMinimum(-0.1);
     for(int ichannel = 0; ichannel < NCHANNEL; ichannel+=2){
-	int ichip = ichannel / NCH;
-	float X, Y;
-	int forCH = ichannel / 2;
-	bool NoisyBool = false;
-	X = CHmap[forCH].first;
-	Y = CHmap[forCH].second;
-	if(ichannel%64 == injCh){
-	    if(oneChannelInjection_flag==true && ichip==injChip) { poly->Fill(X,Y,-2); }
-	    else if (oneChannelInjection_flag==true && ichip!=injChip) { poly->Fill(X,Y,XTalkCoupling_Average[ichannel]); }
-	    else { poly->Fill(X,Y,-2); }
-	}
-	else {
-	    if(!NoisyBool){
-		poly->Fill(X,Y,XTalkCoupling_Average[ichannel]);
-		//poly->Fill(X,Y,forCH);
-	    }
-	}
+        int ichip = ichannel / NCH;
+        float X, Y;
+        int forCH = ichannel / 2;
+        bool NoisyBool = false;
+        X = CHmap[forCH].first;
+        Y = CHmap[forCH].second;
+        if(ichannel%64 == injCh){
+            if(oneChannelInjection_flag==true && ichip==injChip) { poly->Fill(X,Y,-2); }
+            else if (oneChannelInjection_flag==true && ichip!=injChip) { poly->Fill(X,Y,XTalkCoupling_Average[ichannel]); }
+            else { poly->Fill(X,Y,-2); }
+        }
+        else {
+            if(!NoisyBool){
+                poly->Fill(X,Y,XTalkCoupling_Average[ichannel]);
+                //poly->Fill(X,Y,forCH);
+            }
+        }
     }
     if( !oneChannelInjection_flag )
-	sprintf(title,"<E / EInj> InjCh%d", injCh);
+        sprintf(title,"<E / EInj> InjCh%d", injCh);
     else 
-	sprintf(title,"<E / EInj> InjCh%d InjChip%d", injCh, injChip);
+        sprintf(title,"<E / EInj> InjCh%d InjChip%d", injCh, injChip);
 
     gStyle->SetPaintTextFormat("2.3f");
     poly->SetTitle(title);
@@ -2089,9 +2089,9 @@ void makePlots::XTalk_poly() {
     //latex.DrawLatex(-7,-7.5,"*Each pad is filled with its energy divided by the enrgy of the injection channel energy on the same chip");
     c->Update();
     if( !oneChannelInjection_flag )
-	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
+        sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d.png", plot_dir, injCh);
     else 
-	sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d_InjChip%d.png", plot_dir, injCh, injChip);
+        sprintf(title,"%s/XtalkCoupling_Poly_InjCh%d_InjChip%d.png", plot_dir, injCh, injChip);
     c->SaveAs(title);
     poly->Write();
 }
@@ -2102,14 +2102,14 @@ void makePlots::Xtalk_1D(){
     double labelCnct[NCHANNEL/2], labelUnCnct[NCHANNEL/2];
     double XTalkCoupling_Cnct[NCHANNEL/2], XTalkCoupling_UnCnct[NCHANNEL/2];
     for( int ichannel = 0; ichannel < NCHANNEL; ichannel++ ) {
-	if ( ichannel%2 == 1 ) {
-	    labelCnct[ichannel/2] = ichannel;
-	    XTalkCoupling_UnCnct[ichannel/2] = XTalkCoupling_Average[ichannel];
-	}
-	else {
-	    labelUnCnct[ichannel/2] = ichannel;
-	    XTalkCoupling_Cnct[ichannel/2] = XTalkCoupling_Average[ichannel];
-	}
+        if ( ichannel%2 == 1 ) {
+            labelCnct[ichannel/2] = ichannel;
+            XTalkCoupling_UnCnct[ichannel/2] = XTalkCoupling_Average[ichannel];
+        }
+        else {
+            labelUnCnct[ichannel/2] = ichannel;
+            XTalkCoupling_Cnct[ichannel/2] = XTalkCoupling_Average[ichannel];
+        }
     }
     TGraph* gXTalkCoupling_Cnct   = new TGraph(NCHANNEL/2, labelCnct , XTalkCoupling_Cnct);
     sprintf(title,"InjCh%d_XtalkCoupling_Connected_Channel", injCh);
@@ -2137,8 +2137,8 @@ void makePlots::toa_plot(){
     int toaf_r_max[NCHANNEL];
     int ChannelID[NCHANNEL];
     for (int ichannel = 0; ichannel < NCHANNEL; ichannel++){
-	ChannelID[ichannel] = ichannel;
-	toaf_r_max[ichannel] = h_toaf_r[ichannel]->GetMaximumBin();
+        ChannelID[ichannel] = ichannel;
+        toaf_r_max[ichannel] = h_toaf_r[ichannel]->GetMaximumBin();
     }
     TGraph* gtoaf_r = new TGraph(NCHANNEL, ChannelID, toaf_r_max);
     sprintf(title,"InjCh%d_toaFminR", injCh);
@@ -2153,35 +2153,35 @@ void makePlots::toa_plot(){
     TMultiGraph *multig_InjCh_toaF = new TMultiGraph();
     TMultiGraph *multig_InjCh_toaR = new TMultiGraph();
     for(int ichip = 0; ichip < NCHIP; ichip++){
-	int inj_channel = (ichip*64) + injCh;
+        int inj_channel = (ichip*64) + injCh;
 	
-	TGraph* ginjCh_toaF  = new TGraph( Nevents, dac_ctrl, toaf_allCh[inj_channel] );
-	sprintf(title,"chip%d",ichip);
-	ginjCh_toaF->SetTitle(title);
-	ginjCh_toaF->SetName(title);
-	ginjCh_toaF->SetMarkerColor(P.Color(ichip));
-	ginjCh_toaF->SetLineWidth(0);
-	ginjCh_toaF->SetFillColor(0);
+        TGraph* ginjCh_toaF  = new TGraph( Nevents, dac_ctrl, toaf_allCh[inj_channel] );
+        sprintf(title,"chip%d",ichip);
+        ginjCh_toaF->SetTitle(title);
+        ginjCh_toaF->SetName(title);
+        ginjCh_toaF->SetMarkerColor(P.Color(ichip));
+        ginjCh_toaF->SetLineWidth(0);
+        ginjCh_toaF->SetFillColor(0);
 
-	TGraph* ginjCh_toaR  = new TGraph( Nevents, dac_ctrl, toar_allCh[inj_channel] );
-	sprintf(title,"chip%d",ichip);
-	ginjCh_toaR->SetTitle(title);
-	ginjCh_toaR->SetName(title);
-	ginjCh_toaR->SetMarkerColor(P.Color(ichip));
-	ginjCh_toaR->SetLineWidth(0);
-	ginjCh_toaR->SetFillColor(0);
+        TGraph* ginjCh_toaR  = new TGraph( Nevents, dac_ctrl, toar_allCh[inj_channel] );
+        sprintf(title,"chip%d",ichip);
+        ginjCh_toaR->SetTitle(title);
+        ginjCh_toaR->SetName(title);
+        ginjCh_toaR->SetMarkerColor(P.Color(ichip));
+        ginjCh_toaR->SetLineWidth(0);
+        ginjCh_toaR->SetFillColor(0);
 
-	TGraph* ginjCh_toaFminR  = new TGraph( Nevents, dac_ctrl, toaf_r_allCh[inj_channel] );
-	sprintf(title,"chip%d",ichip);
-	ginjCh_toaFminR->SetTitle(title);
-	ginjCh_toaFminR->SetName(title);
-	ginjCh_toaFminR->SetMarkerColor(P.Color(ichip));
-	ginjCh_toaFminR->SetLineWidth(0);
-	ginjCh_toaFminR->SetFillColor(0);
+        TGraph* ginjCh_toaFminR  = new TGraph( Nevents, dac_ctrl, toaf_r_allCh[inj_channel] );
+        sprintf(title,"chip%d",ichip);
+        ginjCh_toaFminR->SetTitle(title);
+        ginjCh_toaFminR->SetName(title);
+        ginjCh_toaFminR->SetMarkerColor(P.Color(ichip));
+        ginjCh_toaFminR->SetLineWidth(0);
+        ginjCh_toaFminR->SetFillColor(0);
 
-	multig_InjCh_toaF->Add(ginjCh_toaF);
-	multig_InjCh_toaR->Add(ginjCh_toaR);
-	multig_InjCh_toaFminR->Add(ginjCh_toaFminR);
+        multig_InjCh_toaF->Add(ginjCh_toaF);
+        multig_InjCh_toaR->Add(ginjCh_toaR);
+        multig_InjCh_toaFminR->Add(ginjCh_toaFminR);
     }
     sprintf(title,"toaFminR_InjCh%d", injCh);
     multig_InjCh_toaFminR->SetTitle(title);
@@ -2215,11 +2215,11 @@ void makePlots::output_xtalkCoupling_all(bool start, bool end, int channel) {
     cout << XTalkCoupling_Ring_1Chip_average << endl;
 
     if (start) 
-	f << injChip << '\t' << injCh << '\t' << sensor2hexaboard[injChip*32 + injCh/2] << endl;
+        f << injChip << '\t' << injCh << '\t' << sensor2hexaboard[injChip*32 + injCh/2] << endl;
     else if (end)
-	f << "===" << endl << endl;
+        f << "===" << endl << endl;
     else
-	f << channel/64 << '\t' << channel%64 << '\t' << sensor2hexaboard[channel/2] << '\t' << XTalkCoupling_Average[channel] << '\t' << fit_intersept << '\t' << fit_slope << std::endl;
+        f << channel/64 << '\t' << channel%64 << '\t' << sensor2hexaboard[channel/2] << '\t' << XTalkCoupling_Average[channel] << '\t' << fit_intersept << '\t' << fit_slope << std::endl;
 }
 
 
@@ -2227,16 +2227,16 @@ void makePlots::deallocate() {
     
     /// deallocate
     /*
-    for (int i = 0; i < NRings; i++){
-	for (int j = 0; j < NCHIP; j++) {
-	    delete[] mip_Ring_4Chip[i][j];
-	    delete[] XTalkCoupling_Ring_4Chip[i][j];
-	}
-	delete[] mip_Ring_4Chip[i];
-	delete[] XTalkCoupling_Ring_4Chip[i];
-    }
-    delete[] mip_Ring_4Chip;
-    delete[] XTalkCoupling_Ring_4Chip;
+      for (int i = 0; i < NRings; i++){
+      for (int j = 0; j < NCHIP; j++) {
+      delete[] mip_Ring_4Chip[i][j];
+      delete[] XTalkCoupling_Ring_4Chip[i][j];
+      }
+      delete[] mip_Ring_4Chip[i];
+      delete[] XTalkCoupling_Ring_4Chip[i];
+      }
+      delete[] mip_Ring_4Chip;
+      delete[] XTalkCoupling_Ring_4Chip;
     */
     
 
