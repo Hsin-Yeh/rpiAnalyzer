@@ -11,7 +11,15 @@
 #include "TSystem.h"
 #include "TImage.h"
 
-//#define DEBUG
+#include "RooRealVar.h"
+#include "RooDataSet.h"
+#include "RooPolynomial.h"
+#include "RooPlot.h"
+#include "RooCmdArg.h"
+#include "RooMinuit.h"
+#include "RooMinimizer.h"
+using namespace RooFit;
+// #define DEBUG
 
 //Constructor
 makePlots::makePlots(TChain* chain1, TChain* chain2):Chain1(chain1),Chain2(chain2)
@@ -260,7 +268,7 @@ void makePlots::sweepPlotter(){
                     inj_channel = ( injChip * NCH ) + injCh;
                 else
                     inj_channel = ( ichip * NCH ) + injCh;
-
+                // if ( (mip_allCh[ichannel][goodEventCount] / mip_allCh[inj_channel][goodEventCount]) > 0.025 ) continue;
                 mip_allCh_goodEvent[ichannel][goodEventCount] = mip_allCh[ichannel][event];
                 XTalkCoupling[ichannel][goodEventCount] = mip_allCh[ichannel][goodEventCount] / mip_allCh[inj_channel][goodEventCount];
                 if( goodEventCount>200 && goodEventCount<=700 ){
@@ -288,7 +296,7 @@ void makePlots::sweepPlotter(){
             /// Calculate XTalkCoupling for FirstRing
             if ( oneChannelInjection_flag ) {
                 for(int iring = 1; iring < NRings; iring++) {
-                    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_allCh[ (injChip*NCH) + injCh ][goodEventCount] * ringChannelCount ) ;
+                    XTalkCoupling_Ring_1Chip[iring][goodEventCount] = mip_Ring_1Chip[iring][goodEventCount] / ( mip_allCh[ (injChip*NCH) + injCh ][goodEventCount]) ;
                 }
                 if( event>200 && event<=700 ) {
                     XTalkCoupling_Ring_1Chip_average += XTalkCoupling_Ring_1Chip[1][goodEventCount];
@@ -1817,8 +1825,8 @@ void makePlots::injectionPlots(){
             gXTalkCoupling->SetMarkerColor(P.Color(ichip));
             gXTalkCoupling->SetLineWidth(0);
             gXTalkCoupling->SetFillColor(0);
-            TF1 *f1 = new TF1("f1","[0]+[1]*x",0,2600);
-            gXTalkCoupling->Fit("f1","R");
+            TF1 *f1 = new TF1("f1","pol1",600,2200);
+            gXTalkCoupling->Fit("f1","R +ROB=0.7");
             gXTalkCoupling->Write();
             fit_intersept = f1->GetParameter(0);
             fit_slope = f1->GetParameter(1);
@@ -1883,6 +1891,7 @@ void makePlots::oneChannelInjection_injectionPlots(){
     ginjCh_mip->SetName(title);
     ginjCh_mip->Write();
 
+    TCanvas* Ctemp = new TCanvas();
     TMultiGraph *multig_XTalkCoupling_ring = new TMultiGraph();
     for(int iring = 1; iring < 2; iring++){
         TGraph* gXTalkCoupling = new TGraph(goodEventCount, mip_allCh_goodEvent[inj_channel], XTalkCoupling_Ring_1Chip[iring]);
@@ -1892,8 +1901,8 @@ void makePlots::oneChannelInjection_injectionPlots(){
         gXTalkCoupling->SetMarkerColor(P.Color(iring-1));
         gXTalkCoupling->SetLineWidth(0);
         gXTalkCoupling->SetFillColor(0);
-        TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2200);
-        gXTalkCoupling->Fit("f1","R");
+        TF1 *f1 = new TF1("f1","pol1",600,2200);
+        gXTalkCoupling->Fit("f1","M R +ROB=0.7");
         fit_intersept = f1->GetParameter(0);
         fit_slope = f1->GetParameter(1);
         multig_XTalkCoupling_ring->Add(gXTalkCoupling);
@@ -1904,7 +1913,35 @@ void makePlots::oneChannelInjection_injectionPlots(){
     multig_XTalkCoupling_ring->Draw("AP");
     multig_XTalkCoupling_ring->GetYaxis()->SetRangeUser(-0.01,0.3);
     multig_XTalkCoupling_ring->Write();
+    Ctemp->Update();
+    Ctemp->SaveAs("test.pdf");
+
     
+
+    RooRealVar x("x","injectionMIP",0.,2460.);
+    RooRealVar y("y","FirstRingXTalkCoupling",0,1);
+    RooDataSet data("data","data",RooArgSet(x,y));
+    for(int ev = 0; ev < goodEventCount; ev++){
+        x.setVal(mip_allCh_goodEvent[inj_channel][ev]);
+        y.setVal(XTalkCoupling_Ring_1Chip[1][ev]);
+        data.add(RooArgSet(x,y));
+        // std::cout << mip_allCh_goodEvent[inj_channel][ev] << " " << XTalkCoupling_Ring_1Chip[1][ev] << std::endl;
+    }
+    data.Print("v");
+    // getchar();
+
+    TCanvas* croofit = new TCanvas();
+    croofit->cd();
+    // RooRealVar slope("slope","slope",0.3,-10.,10.);
+    // RooPolynomial linear("linear","linear",x,RooArgSet(slope));
+    // linear.fitTo(data,Minos(true));
+    RooPlot* frame = x.frame();
+    data.plotOn(frame);
+    // linear.plotOn(frame);
+    // linear.plotOn(frame,Components(linear),LineStyle(7),LineColor(kRed));
+    frame->Draw();
+    croofit->Update();
+    croofit->SaveAs("Roofit.pdf");
 }
 
 void makePlots::const_injPlots() {
@@ -2014,8 +2051,8 @@ void makePlots::injectionPlots_allCh() {
             gXTalkCoupling->SetMinimum(-0.01);
             gXTalkCoupling->SetMaximum(0.05);
             multig->Add(gXTalkCoupling);
-            TF1 *f1 = new TF1("f1","[0]+[1]*x",800,2600);
-            gXTalkCoupling->Fit("f1","ROB R");
+            TF1 *f1 = new TF1("f1","pol1",600,2200);
+            gXTalkCoupling->Fit("f1","+ROB=0.7 R");
             fit_intersept = f1->GetParameter(0);
             fit_slope = f1->GetParameter(1);
             output_xtalkCoupling_all(false , false, ichannel);
@@ -2036,7 +2073,7 @@ void makePlots::injectionPlots_allCh() {
     multig->SetMaximum(0.05);
     multig->Write();
     c->Update();
-    sprintf(title,"%s/xtalk_firstRing_seperate_InjCh%d_InjChip%d.png",plot_dir, injCh, injChip);
+    sprintf(title,"%s/xtalk_firstRing_seperate_InjCh%d_InjChip%d.pdf",plot_dir, injCh, injChip);
     c->SaveAs(title);
     output_xtalkCoupling_all(false , true, 0);
 

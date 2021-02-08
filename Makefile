@@ -12,7 +12,7 @@ CXXFLAGS=-g -m64 -O2 -Wall -std=c++0x $(INC)
 ROOTFLAGS=$(shell root-config --libs --cflags --glibs)
 
 $(TARGET): $(OBJECTS)
-	g++ $^ -o $@ $(CXXFLAGS) $(ROOTFLAGS)
+	g++ $^ -o $@ $(CXXFLAGS) $(ROOTFLAGS) -lRooFit -lRooFitCore -lTMVA -lMLP -lTreePlayer -lMinuit
 
 $(BUILDDIR)/main.o: $(SRCDIR)/main.cc
 	g++ -c $(CXXFLAGS) $(ROOTFLAGS) $< -o $@

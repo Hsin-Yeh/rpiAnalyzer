@@ -11,7 +11,7 @@ string main_outpath = "./";
 string main_datainput = "./data_input.txt";
 string pedfile   = "./pedestal";
 //string gainfile  = "./src_txtfile/TPro_fittingoutput.txt";
-string gainfile = "./src_txtfile/gainfactor_88.txt";
+string gainfile = "./src_txtfile/gainfactor_124.txt";
 string noisyfile = "./src_txtfile/noisyChannels.txt";
 
 /// utility
